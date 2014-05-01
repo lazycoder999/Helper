@@ -1,5 +1,6 @@
 package helper.pack;
 
+import java.awt.Window;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -494,6 +495,40 @@ public class Gh {
 		}
 
 		return floatNumber;
+	}
+
+	public static void runSystemCommand(String command) {
+
+		try {
+			Runtime.getRuntime().exec(command);
+//			BufferedReader inputStream = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//
+//			String s = "";
+//			// reading output stream of the command
+//			while ((s = inputStream.readLine()) != null) {
+//				prnt("[ping]" + s);
+//			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public Window getSelectedWindow(Window[] windows) {
+
+		Window result = null;
+		for (int i = 0; i < windows.length; i++) {
+			Window window = windows[i];
+			if (window.isActive()) {
+				result = window;
+			} else {
+				Window[] ownedWindows = window.getOwnedWindows();
+				if (ownedWindows != null) {
+					result = getSelectedWindow(ownedWindows);
+				}
+			}
+		}
+		return result;
 	}
 
 }
