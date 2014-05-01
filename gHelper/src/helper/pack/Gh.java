@@ -34,7 +34,7 @@ public class Gh {
 	public static int logArrayItmp = 0;
 	public boolean shuttingDown = false;
 
-	// i added
+	// i added something
 
 	public static void runPrintLogToConsole() {
 		prnt("Ghelper: runGhelper Start");
