@@ -24,7 +24,7 @@ public class GfileReader {
 		this.readerListener = readerListener;
 	}
 	
-	public void StartClient(String fileName, int refreshRate, byte listenerId, boolean sendOnChange) {
+	public void StartClient(String fileName, int refreshRate, byte listenerId, boolean sendOnChange, byte lineNumb) {
 		Gh.runPrintLogToConsole();
 		
 		String prev_line = "aaa";
@@ -55,10 +55,10 @@ public class GfileReader {
 				
 				if (pipe != null) {
 					String line = null;
+					byte lineNumbCnt = 0;
 					try {
 						while (null != (line = pipe.readLine()) && pipe != null) {
-							
-							if (!prev_line.equals(line) || !sendOnChange) {
+							if ((!prev_line.equals(line) || !sendOnChange) && lineNumbCnt == lineNumb) {
 								//Gh.prnt("readed line=" + line);
 								prev_line = line;
 								
@@ -68,6 +68,7 @@ public class GfileReader {
 									readerListener.incomingFileMsg2(prev_line);
 								}
 							}
+							lineNumbCnt++;
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -85,6 +86,7 @@ public class GfileReader {
 				}
 			} else {
 				Gh.prnte("fileRead=" + fileRead + " fileExists=" + fileExists + " fileIs=" + fileIs);
+				Gh.prnte("fileName=" + fileName + " listenerId=" + listenerId);
 			}
 		}
 		
