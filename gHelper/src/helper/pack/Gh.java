@@ -36,6 +36,9 @@ public class Gh {
 	public static int				logArrayItmp	= 0;
 	public boolean					shuttingDown	= false;
 	
+	public static String			globalVar1		= "";
+	public static String			globalVar2		= "";
+	
 	// i added something
 	
 	public static void runPrintLogToConsole() {
@@ -136,9 +139,10 @@ public class Gh {
 	private synchronized static void printLogToConsole() {
 		for (short i = logArrayIprinted; i < logArrayI; i++) {
 			
-			if (logArray[i] != null && logArray[i] != "" && !logArray[i].contains("[speed]") && !logArray[i].contains("[debug]")) {
+			if (logArray[i] != null && logArray[i] != "" && !logArray[i].contains("[speed]") && !logArray[i].contains("[debug]")
+					&& !logArray[i].contains("[tickstat]")) {
 				
-				String text = logArray[i].replace("[prices]", "");
+				String text = logArray[i].replace("[prices]", "").replace("[ok]", "");
 				text = text.substring(11);
 				text = text.replace(";", " ");
 				
@@ -268,7 +272,12 @@ public class Gh {
 		System.out.println("writeAll Start");
 		try {
 			String fs = File.separator;
-			String folderName = "C:" + fs + "log_skudra" + fs + getPcAndUserName() + fs;
+			
+			globalVar1 = globalVar1.replaceAll(globalVar2, "");
+			globalVar1 = globalVar1.replaceAll("M1", "").replaceAll("M5", "").replaceAll("M15", "").replaceAll("M30", "");
+			globalVar1 = globalVar1.replaceAll("H1", "").replaceAll("H4", "").replaceAll("D1", "").replaceAll("W1", "").replaceAll("MN", "");
+			
+			String folderName = "C:" + fs + "log_skudra" + fs + getPcAndUserName() + fs + globalVar1.replaceAll("[^a-zA-Z0-9.-]", "") + "_";
 			
 			System.out.println("writeAll folderName=" + folderName);
 			for (short i = 0; i < logArrayItmp; i++) {
@@ -284,13 +293,31 @@ public class Gh {
 					}
 				} else if (logArrayTmp[i].contains("[err]")) {
 					try {
-						writeLine(logArrayTmp[i], folderName, td() + "_" + getRunningFileName() + "_[err].txt");
+						writeLine(logArrayTmp[i], folderName, getRunningFileName() + "_[err].txt");
 					} catch (Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
 				} else if (logArrayTmp[i].contains("[speed]")) {
 					try {
-						writeLine(logArrayTmp[i], folderName, td() + "_" + getRunningFileName() + "_[speed].txt");
+						writeLine(logArrayTmp[i], folderName, getRunningFileName() + "_[speed].txt");
+					} catch (Exception e) {
+						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
+					}
+				} else if (logArrayTmp[i].contains("[op]")) {
+					try {
+						writeLine(logArrayTmp[i], folderName, getRunningFileName() + "_[operations].txt");
+					} catch (Exception e) {
+						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
+					}
+				} else if (logArrayTmp[i].contains("[tickstat]")) {
+					try {
+						writeLine(logArrayTmp[i], folderName, getRunningFileName() + "_[tickstat].txt");
+					} catch (Exception e) {
+						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
+					}
+				} else if (logArrayTmp[i].contains(";signal;")) {
+					try {
+						writeLine(logArrayTmp[i], folderName, getRunningFileName() + "_[sigFills].txt");
 					} catch (Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
