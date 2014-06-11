@@ -81,8 +81,8 @@ public class RunServerg2 extends Application implements ServerListener {
 		srv.setServerPort(Integer.valueOf(textField.getText()));
 		
 		System.out.println("ffff");
-		th = new Thread(srv);
-		th.start();
+		//th = new Thread(srv);
+		//th.start();
 		System.out.println("4");
 	}
 	

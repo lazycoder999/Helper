@@ -49,7 +49,7 @@ public class Gh {
 				while (true) {
 					printLogToConsole();
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(5);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
