@@ -23,7 +23,7 @@ public class Clientg2 {
 	public Integer clientPort = 0;
 	private boolean isConnectedToF = false;
 	private long lastHbReceivedTms = 0;
-	private int receiveHbTimeotTms = 5000;
+	private int receiveHbTimeotTms = 4000;
 	private int sendHbEachTms = 2000;
 
 // unique	
@@ -233,6 +233,11 @@ public class Clientg2 {
 					}
 				} catch (IOException e) {
 					Gh.prnte(ip + ":" + clientPort + " serverListener error on readLine, e=" + e.getMessage());
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
 				}
 
 			} else {

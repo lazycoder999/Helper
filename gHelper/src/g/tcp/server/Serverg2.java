@@ -23,7 +23,7 @@ public class Serverg2 {
 	public Integer serverPort;
 	private boolean isConnectedToF = false;
 	private long lastHbReceivedTms = 0;
-	private int receiveHbTimeotTms = 10000;
+	private int receiveHbTimeotTms = 6000;
 	private int sendHbEachTms = 2000;
 	private int sendPingEachTms = 2000;
 	private long lastPingSentTms = 0;
