@@ -567,4 +567,31 @@ public class Gh {
 		bd = bd.setScale(places, RoundingMode.HALF_UP);
 		return bd.doubleValue();
 	}
+	
+	public String gRound(Double notRoundedNbr, Integer digits) {
+		if (notRoundedNbr != null) {
+			String roundedNbr = new BigDecimal(notRoundedNbr).setScale(digits, RoundingMode.HALF_UP).toString();
+			return roundedNbr;
+		} else {
+			return null;
+		}
+	}
+	
+	public String gRound(Float notRoundedNbr, Integer digits) {
+		if (notRoundedNbr != null) {
+			String roundedNbr = new BigDecimal(notRoundedNbr).setScale(digits, RoundingMode.HALF_UP).toString();
+			return roundedNbr;
+		} else {
+			return null;
+		}
+	}
+	
+	public String gRound(BigDecimal notRoundedNbr, Integer digits) {
+		if (notRoundedNbr != null) {
+			String roundedNbr = notRoundedNbr.setScale(digits, RoundingMode.HALF_UP).toString();
+			return roundedNbr;
+		} else {
+			return null;
+		}
+	}
 }
