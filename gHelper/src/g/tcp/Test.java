@@ -24,6 +24,7 @@ public class Test {
 			}
 		});
 		servThr.setPriority(Thread.MAX_PRIORITY);
+		servThr.setName("servThr");
 		servThr.start();
 
 		Thread clientThr = new Thread(new Runnable() {
@@ -34,6 +35,7 @@ public class Test {
 			}
 		});
 		clientThr.setPriority(Thread.MAX_PRIORITY);
+		clientThr.setName("clientThr");
 		clientThr.start();
 
 		try {

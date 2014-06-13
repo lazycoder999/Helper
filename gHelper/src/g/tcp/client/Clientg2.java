@@ -55,7 +55,8 @@ public class Clientg2 {
 				}
 			}
 		});
-		receiveHbThr.setPriority(Thread.MIN_PRIORITY);
+		receiveHbThr.setPriority(Thread.MAX_PRIORITY);
+		receiveHbThr.setName("receiveHbThr");
 		receiveHbThr.start();
 
 		Thread sendHbThr = new Thread(new Runnable() {
@@ -75,7 +76,8 @@ public class Clientg2 {
 				}
 			}
 		});
-		sendHbThr.setPriority(Thread.MIN_PRIORITY);
+		sendHbThr.setPriority(Thread.MAX_PRIORITY);
+		sendHbThr.setName("sendHbThr");
 		sendHbThr.start();
 	}
 
@@ -100,7 +102,8 @@ public class Clientg2 {
 		try {
 			socket = new Socket(ip, clientPort);
 			socket.setTcpNoDelay(true);
-			socket.setPerformancePreferences(0, 0, 0);
+			socket.setPerformancePreferences(2, 0, 1);
+
 			//Gh.prnt(ip + ":" + port + " createSocketConnection clientSocket succesfull");
 		} catch (UnknownHostException e) {
 			Gh.prnte(ip + ":" + clientPort + " createSocketConnection clientSocket failed, e=" + e.getMessage());
@@ -157,8 +160,9 @@ public class Clientg2 {
 	public void sendMsg(String text) {
 		if (isConnectedToF && text != null && !"".equals(text) && text.length() > 1) {
 			try {
-				//Gh.prnt("Client sendMsg text=" + text);
-				outputStreamWriter.write(text + '\n');
+				//Gh.prnt("Client sendMsg text=" + text);	
+				text = text + '\n';
+				outputStreamWriter.write(text, 0, text.length());
 				outputStreamWriter.flush();
 			} catch (IOException e) {
 				Gh.prnte(ip + ":" + clientPort + " sendMsg exception: " + e.getMessage());

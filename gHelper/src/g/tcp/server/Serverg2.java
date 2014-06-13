@@ -13,6 +13,7 @@ import java.net.Socket;
 
 public class Serverg2 {
 
+	private Gh gh = new Gh();
 	private Socket socket = null;
 
 	private OutputStreamWriter outputStreamWriter = null;
@@ -20,20 +21,21 @@ public class Serverg2 {
 
 	private BufferedReader bufferedReader = null;
 
-	public Integer serverPort;
+	public int serverPort;
 	private boolean isConnectedToF = false;
 	private long lastHbReceivedTms = 0;
 	private int receiveHbTimeotTms = 6000;
 	private int sendHbEachTms = 2000;
-	private int sendPingEachTms = 2000;
-	private long lastPingSentTms = 0;
+	private int sendPingEachTms = 1000;
+	private long lastPingSentTns = 0;
 
 // unique	
 
 	private ServerSocket serverSocket = null;
 
 	public byte srvId = 0;
-
+	private float latencySum = 0;
+	private int pongCount = 0;
 	private ServerListener srvListener;
 
 // unique
@@ -67,13 +69,14 @@ public class Serverg2 {
 								reconnecter("HB not received");
 							}
 						});
-						reconnecterThread.setPriority(Thread.MIN_PRIORITY);
+						reconnecterThread.setPriority(Thread.MAX_PRIORITY);
 						reconnecterThread.start();
 					}
 				}
 			}
 		});
-		receiveHbThr.setPriority(Thread.MIN_PRIORITY);
+		receiveHbThr.setPriority(Thread.MAX_PRIORITY);
+		receiveHbThr.setName("receiveHbThr");
 		receiveHbThr.start();
 
 		Thread sendHbThr = new Thread(new Runnable() {
@@ -93,7 +96,8 @@ public class Serverg2 {
 				}
 			}
 		});
-		sendHbThr.setPriority(Thread.MIN_PRIORITY);
+		sendHbThr.setPriority(Thread.MAX_PRIORITY);
+		sendHbThr.setName("sendHbThr");
 		sendHbThr.start();
 
 		Thread sendPingThr = new Thread(new Runnable() {
@@ -106,7 +110,7 @@ public class Serverg2 {
 					}
 
 					try {
-						lastPingSentTms = System.currentTimeMillis();
+						lastPingSentTns = System.nanoTime();
 						sendMsg("PING");
 					} catch (Exception e) {
 						Gh.prnte(serverPort + " sendMsg(PING) error, e=" + e.getMessage());
@@ -114,16 +118,22 @@ public class Serverg2 {
 				}
 			}
 		});
-		sendPingThr.setPriority(Thread.MIN_PRIORITY);
+		sendPingThr.setPriority(Thread.MAX_PRIORITY);
+		sendPingThr.setName("sendPingThr");
 		sendPingThr.start();
 	}
 
 	private boolean createConnection() {
 		serverSocket = null;
-
+		//012 21
+		//021 21
+		//102 21
+		//120 21
+		//201 21
+		//210 21
 		try {
 			serverSocket = new ServerSocket(serverPort);
-			serverSocket.setPerformancePreferences(0, 0, 0);
+			serverSocket.setPerformancePreferences(2, 0, 1);
 		} catch (IOException e) {
 			Gh.prnte(serverPort + " createServerSocketConnection new serverSocket failed on port=" + serverPort);
 			serverSocket = null;
@@ -135,7 +145,7 @@ public class Serverg2 {
 				Gh.prnt(serverPort + " createSocketConnection clientSocket = serverSocket.accept() waiting on incomming connection...");
 				socket = serverSocket.accept();
 				socket.setTcpNoDelay(true);
-				socket.setPerformancePreferences(0, 0, 0);
+				socket.setPerformancePreferences(2, 0, 1);
 				Gh.prnt(serverPort + " createSocketConnection clientSocket succesful");
 			} catch (IOException e) {
 				Gh.prnte(serverPort + " createSocketConnection clientSocket failed, e=" + e.getMessage());
@@ -186,25 +196,21 @@ public class Serverg2 {
 	}
 
 	public void sendMsg(String text) {
-		// Gh.prnt(serverName + " sendMsg Start");
 		if (isConnectedToF) {
 			if (outputStreamWriter != null) {
 				try {
-					outputStreamWriter.write(text + '\n');
+					text = text + '\n';
+					outputStreamWriter.write(text, 0, text.length());
 					outputStreamWriter.flush();
 				} catch (IOException e) {
 					Gh.prnte(serverPort + " sendMsg error sening to Client");
-					// reconnecter("sendMsg");
 				}
 			} else {
 				Gh.prnte(serverPort + " sendMsg outputStreamWriter==null");
-				// reconnecter("sendMsg");
 			}
 		} else {
 			Gh.prnte(serverPort + " sendMsg cannot send msg=" + text + " because isConnectedToF = false");
-			// reconnecter("sendMsg");
 		}
-		// Gh.prnt(serverName + " sendMsg End");
 	}
 
 	private void reconnecter(String calletId) {
@@ -258,7 +264,12 @@ public class Serverg2 {
 					} else if ("restart".equals(receivedText)) {
 						reconnecter("received over TCP");
 					} else if ("PONG".equals(receivedText)) {
-						Gh.prnt("received PONG = " + (System.currentTimeMillis() - lastPingSentTms) + "ms");
+						pongCount++;
+						float latency = (System.nanoTime() - lastPingSentTns);
+						latency = latency / 1000000;
+						latencySum = latencySum + latency;
+						Gh.prnt("PONG avg = " + gh.gRound(latencySum / pongCount, 5) + "ms / now=" + gh.gRound(latency, 5) + "ms");
+						//Gh.prnt("received PONG = " + gh.gRound(latency, 5) + "ms");
 					} else {
 						if (srvListener != null) {
 							if (srvId == 1) {
@@ -352,4 +363,5 @@ public class Serverg2 {
 
 		//Gh.prnt(serverName + " closeAll end");
 	}
+
 }
