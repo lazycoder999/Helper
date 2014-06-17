@@ -18,6 +18,7 @@ import java.security.CodeSource;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.util.Set;
 
 public class Gh {
 	
@@ -42,7 +43,6 @@ public class Gh {
 	private static boolean			whileRunning	= true;
 	
 	public Gh() {
-		System.out.println("constructor");
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -52,30 +52,32 @@ public class Gh {
 	}
 	
 	public static void runPrintLogToConsole() {
-		prnt("Ghelper: runGhelper Start");
-		Thread printLogToConsoleThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				while (whileRunning) {
-					printLogToConsole();
-					try {
-						Thread.sleep(5);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
+		if (getThreadByName("printLogToConsoleThread") == null) {
+			prnt("Ghelper: runGhelper Start");
+			Thread printLogToConsoleThread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					while (whileRunning) {
+						printLogToConsole();
+						try {
+							Thread.sleep(5);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
 				}
-			}
-		});
-		printLogToConsoleThread.setPriority(Thread.MIN_PRIORITY);
-		printLogToConsoleThread.setName("printLogToConsoleThread");
-		printLogToConsoleThread.start();
-		
-		DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
-		DecimalFormatSymbols custom = new DecimalFormatSymbols();
-		custom.setDecimalSeparator('.');
-		format.setDecimalFormatSymbols(custom);
-		
-		prnt("Ghelper: runGhelper End");
+			});
+			printLogToConsoleThread.setPriority(Thread.MIN_PRIORITY);
+			printLogToConsoleThread.setName("printLogToConsoleThread");
+			printLogToConsoleThread.start();
+			
+			DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
+			DecimalFormatSymbols custom = new DecimalFormatSymbols();
+			custom.setDecimalSeparator('.');
+			format.setDecimalFormatSymbols(custom);
+			
+			prnt("Ghelper: runGhelper End");
+		}
 	};
 	
 	public String t() {
@@ -572,7 +574,7 @@ public class Gh {
 		return result;
 	}
 	
-	public static double roundDouble(double value, int places) {
+	public double roundDouble(double value, int places) {
 		if (places < 0)
 			throw new IllegalArgumentException();
 		
@@ -608,4 +610,17 @@ public class Gh {
 		}
 	}
 	
+	public static Thread getThreadByName(String threadName) {
+		Thread __tmp = null;
+		
+		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+		Thread[] threadArray = threadSet.toArray(new Thread[threadSet.size()]);
+		
+		for (int i = 0; i < threadArray.length; i++) {
+			if (threadArray[i].getName().equals(threadName))
+				__tmp = threadArray[i];
+		}
+		
+		return __tmp;
+	}
 }
