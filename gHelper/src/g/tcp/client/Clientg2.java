@@ -183,7 +183,7 @@ public class Clientg2 implements Runnable {
 		}
 	}
 
-	public void reconnecter(final String caller) {
+	private void reconnecter(final String caller) {
 		Gh.prnt(ip + ":" + clientPort + " reconnecter called=" + caller);
 		if (ip != null && !"".equals(ip)) {
 			if (!reconnecterCalled) {
