@@ -16,16 +16,24 @@ public class Test {
 		Serverg2 server = new Serverg2();
 		Clientg2 client = new Clientg2();
 
-		Thread servThr = new Thread(new Runnable() {
-			public void run() {
-				server.srvId = (byte) 1;
-				server.serverPort = 5566;
-				server.startServerg2();
-			}
-		});
-		servThr.setPriority(Thread.MAX_PRIORITY);
-		servThr.setName("servThr");
-		servThr.start();
+		/*		Thread servThr = new Thread(new Runnable() {
+					public void run() {
+						server.srvId = (byte) 1;
+						server.serverPort = 5566;
+						server.startServerg2();
+					}
+				});
+				servThr.setPriority(Thread.MAX_PRIORITY);
+				servThr.setName("servThr");
+				servThr.start();*/
+
+		//MyRunner myRunner = new MyRunner();
+		server.srvId = (byte) 1;
+		server.serverPort = 5566;
+		//server.startServerg2();
+		Thread myThread = new Thread(server);
+		myThread.setName("myThread");
+		myThread.start();
 
 		Thread clientThr = new Thread(new Runnable() {
 			public void run() {
