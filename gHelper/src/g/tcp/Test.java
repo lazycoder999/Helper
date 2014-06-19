@@ -1,50 +1,31 @@
 package g.tcp;
 
-import g.tcp.client.Clientg2;
-import g.tcp.server.Serverg2;
+import g.tcp.server.ServerListener;
+import g.tcp.server.Serverg3;
 import helper.pack.Gh;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class Test {
+public class Test implements ServerListener {
 
 	public static void main(String[] args) {
+		Test tst = new Test();
+		tst.starto();
+	}
+
+	public void starto() {
 		Gh.runPrintLogToConsole();
 
-		Serverg2 server = new Serverg2();
-		Clientg2 client = new Clientg2();
+		Serverg3 server = new Serverg3();
 
-		/*		Thread servThr = new Thread(new Runnable() {
-					public void run() {
-						server.srvId = (byte) 1;
-						server.serverPort = 5566;
-						server.startServerg2();
-					}
-				});
-				servThr.setPriority(Thread.MAX_PRIORITY);
-				servThr.setName("servThr");
-				servThr.start();*/
-
-		//MyRunner myRunner = new MyRunner();
 		server.srvId = (byte) 1;
 		server.serverPort = 5566;
-		//server.startServerg2();
+		server.setServerListener(this);
 		Thread myThread = new Thread(server);
 		myThread.setName("myThread");
 		myThread.start();
-
-		Thread clientThr = new Thread(new Runnable() {
-			public void run() {
-				client.clientPort = 5566;
-				client.ip = "127.0.0.1";
-				client.startClientg2();
-			}
-		});
-		clientThr.setPriority(Thread.MAX_PRIORITY);
-		clientThr.setName("clientThr");
-		clientThr.start();
 
 		try {
 			Thread.sleep(782);
@@ -66,9 +47,9 @@ public class Test {
 							e.printStackTrace();
 						}
 
-						if (line.equals("cclose")) {
-							client.closeAll();
-						}
+//						if (line.equals("cclose")) {
+//							client.closeAll();
+//						}
 
 					}
 
@@ -82,5 +63,47 @@ public class Test {
 		});
 		consoleListenerThread.setPriority(Thread.MIN_PRIORITY);
 		consoleListenerThread.start();
+	}
+
+	@Override
+	public void incomingMessage1(String line) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void incomingMessage2(String line) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void incomingMessage3(String line) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void incomingMessage4(String line) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void incomingMessage5(String line) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void incomingMessage6(String line) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void incomingMessage7(String line) {
+		// TODO Auto-generated method stub
+
 	}
 }

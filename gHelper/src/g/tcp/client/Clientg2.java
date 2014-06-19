@@ -11,7 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class Clientg2 {
+public class Clientg2 implements Runnable {
 
 	private Socket socket = null;
 
@@ -31,7 +31,7 @@ public class Clientg2 {
 	private boolean reconnecterCalled = false;
 
 // common
-	public void startClientg2() {
+	private void startClientg2() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				closeAll();
@@ -158,6 +158,7 @@ public class Clientg2 {
 	}
 
 	public void sendMsg(String text) {
+		//Gh.prnt("client send");
 		if (isConnectedToF && text != null && !"".equals(text) && text.length() > 1) {
 			try {
 				//Gh.prnt("Client sendMsg text=" + text);	
@@ -277,5 +278,10 @@ public class Clientg2 {
 		}
 
 		//Gh.prnt("Client closeConn End");
+	}
+
+	@Override
+	public void run() {
+		startClientg2();
 	}
 }

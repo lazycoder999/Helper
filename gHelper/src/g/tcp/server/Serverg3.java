@@ -11,7 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Serverg2 implements Runnable {
+public class Serverg3 implements Runnable {
 
 	private Gh gh = new Gh();
 	private Socket socket = null;
@@ -22,11 +22,9 @@ public class Serverg2 implements Runnable {
 	private BufferedReader bufferedReader = null;
 
 	public int serverPort;
-	private boolean isConnectedToF = false;
-	private long lastHbReceivedTms = 0;
-	private int receiveHbTimeotTms = 6000;
+
 	private int sendHbEachTms = 2000;
-	private int sendPingEachTms = 500;
+	private int sendPingEachTms = 5000;
 	private long lastPingSentTns = 0;
 
 // unique	
@@ -50,32 +48,7 @@ public class Serverg2 implements Runnable {
 			}
 		});
 
-		Thread receiveHbThr = new Thread(new Runnable() {
-			public void run() {
-				while (true) {
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-
-					if (System.currentTimeMillis() - lastHbReceivedTms > receiveHbTimeotTms) {
-						Gh.prnt(serverPort + " HB not reveiced over " + receiveHbTimeotTms + "ms");
-						lastHbReceivedTms = System.currentTimeMillis();
-						Thread reconnecterThread = new Thread(new Runnable() {
-							public void run() {
-								reconnecter("HB not received");
-							}
-						});
-						reconnecterThread.setPriority(Thread.MAX_PRIORITY);
-						reconnecterThread.start();
-					}
-				}
-			}
-		});
-		receiveHbThr.setPriority(Thread.MAX_PRIORITY);
-		receiveHbThr.setName("receiveHbThr");
-		receiveHbThr.start();
+		reconnecter("start server");
 
 		Thread sendHbThr = new Thread(new Runnable() {
 			public void run() {
@@ -131,6 +104,7 @@ public class Serverg2 implements Runnable {
 		//210 21
 		try {
 			serverSocket = new ServerSocket(serverPort);
+			serverSocket.setSoTimeout(5000);
 			serverSocket.setPerformancePreferences(2, 0, 1);
 		} catch (IOException e) {
 			Gh.prnte(serverPort + " createServerSocketConnection new serverSocket failed on port=" + serverPort);
@@ -143,6 +117,7 @@ public class Serverg2 implements Runnable {
 				Gh.prnt(serverPort + " createSocketConnection clientSocket = serverSocket.accept() waiting on incomming connection...");
 				socket = serverSocket.accept();
 				socket.setTcpNoDelay(true);
+				socket.setSoTimeout(5000);
 				socket.setPerformancePreferences(2, 0, 1);
 				Gh.prnt(serverPort + " createSocketConnection clientSocket succesful");
 			} catch (IOException e) {
@@ -194,151 +169,132 @@ public class Serverg2 implements Runnable {
 	}
 
 	public void sendMsg(String text) {
-		if (isConnectedToF) {
-			if (outputStreamWriter != null) {
-				try {
-					text = text + '\n';
-					outputStreamWriter.write(text, 0, text.length());
-					outputStreamWriter.flush();
-				} catch (IOException e) {
-					Gh.prnte(serverPort + " sendMsg error sening to Client");
-				}
-			} else {
-				Gh.prnte(serverPort + " sendMsg outputStreamWriter==null");
+		if (outputStreamWriter != null) {
+			try {
+				text = text + '\n';
+				outputStreamWriter.write(text, 0, text.length());
+				outputStreamWriter.flush();
+			} catch (IOException e) {
+				Gh.prnte(serverPort + " sendMsg error sening to Client");
 			}
 		} else {
-			Gh.prnte(serverPort + " sendMsg cannot send msg=" + text + " because isConnectedToF = false");
+			Gh.prnte(serverPort + " sendMsg outputStreamWriter==null");
 		}
 	}
 
 	private void reconnecter(String calletId) {
-		Gh.prnt(serverPort + " reconnecter called callerId=" + calletId);
-		closeAll();
-		if (!isConnectedToF) { // && !isListeningToF
-			//Gh.prnt(serverPort + " reconnecter launched callerId=" + calletId);
+		Thread startThr = new Thread(new Runnable() {
+			public void run() {
+				Gh.prnt(serverPort + " reconnecter called callerId=" + calletId);
+				closeAll();
 
-			isConnectedToF = createConnection();
-			if (isConnectedToF) {
-				serverListener();
-			} else {
-				Gh.prnte(serverPort + " cannot start serverListener because isConnectedToF=" + isConnectedToF + " callerId=" + calletId);
+				while (!createConnection()) {
+					closeAll();
+				}
+
+				Thread serverListenerThr = new Thread(new Runnable() {
+					public void run() {
+						serverListener();
+					}
+				});
+				serverListenerThr.setPriority(Thread.MAX_PRIORITY);
+				serverListenerThr.setName("startThr");
+				serverListenerThr.start();
 			}
-
-		} else {
-			Gh.prnte(serverPort + " cannot start reconnecter because isConnectedToF=" + isConnectedToF);
-		}
+		});
+		startThr.setPriority(Thread.MAX_PRIORITY);
+		startThr.setName("startThr");
+		startThr.start();
 	}
 
 	private void serverListener() {
 //		Gh.prnt(serverName + " serverListener Start");
 
-		if (bufferedReader != null) {
-
-			Gh.prnt(serverPort + " serverListener start listening (before while) final isConnectedToF=" + isConnectedToF);
-			String receivedText = "";
-			while (isConnectedToF) {
-				if (bufferedReader != null) {
+		Gh.prnt(serverPort + " serverListener start listening (before while)");
+		String receivedText = "";
+		while (true) {
+			if (bufferedReader != null) {
+				receivedText = "";
+				try {
+					receivedText = bufferedReader.readLine();
+				} catch (Exception e) {
+					Gh.prnte(serverPort + " br.readLine exception");
 					receivedText = "";
-					try {
-						receivedText = bufferedReader.readLine();
-					} catch (Exception e) {
-						Gh.prnte(serverPort + " br.readLine exception");
-						receivedText = "";
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-					}
-
-				} else {
-					receivedText = null;
+					break;
 				}
-				//Gh.prnt(serverName + " serverListener received inputLine=" + receivedText);
-				if (receivedText != null) {
-					if ("HB".equals(receivedText)) {
-						//Gh.prnt(serverPort + " serverListener checker received HB");
-						lastHbReceivedTms = System.currentTimeMillis();
-					} else if ("restart".equals(receivedText)) {
-						reconnecter("received over TCP");
-					} else if ("PONG".equals(receivedText)) {
-						float latency = (System.nanoTime() - lastPingSentTns);
-						latency = latency / 1000000;
-						if (latency > 1) {
-							Gh.prnt("PONG now=" + gh.gRound(latency, 5) + "ms");
-						}
-						Gh.prnt("received PONG = " + gh.gRound(latency, 5) + "ms");
-					} else {
-						if (srvListener != null) {
-							if (srvId == 1) {
-								srvListener.incomingMessage1(receivedText);
-							} else if (srvId == 2) {
-								srvListener.incomingMessage2(receivedText);
-							} else if (srvId == 3) {
-								srvListener.incomingMessage3(receivedText);
-							} else if (srvId == 4) {
-								srvListener.incomingMessage4(receivedText);
-							} else if (srvId == 5) {
-								srvListener.incomingMessage5(receivedText);
-							} else {
 
-							}
-
-						} else {
-							Gh.prnte(serverPort + " serverListener srvListener=null");
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e1) {
-								e1.printStackTrace();
-							}
-						}
-					}
-				} else {
-					Gh.prnte(serverPort + " serverListener receivedText=null breaking out of while listener");
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-//					isListeningToF = false;
-//					break;
-				}
+			} else {
+				receivedText = null;
+				break;
 			}
+			//Gh.prnt(serverName + " serverListener received inputLine=" + receivedText);
+			if (receivedText != null) {
+				if ("restart".equals(receivedText)) {
+					break;
+				} else if ("PONG".equals(receivedText)) {
+					float latency = (System.nanoTime() - lastPingSentTns);
+					latency = latency / 1000000;
+					if (latency > 1) {
+						Gh.prnt("PONG now=" + gh.gRound(latency, 5) + "ms");
+					}
+					Gh.prnt("received PONG = " + gh.gRound(latency, 5) + "ms");
+				} else {
+					if (srvListener != null) {
+						if (srvId == 1) {
+							srvListener.incomingMessage1(receivedText);
+						} else if (srvId == 2) {
+							srvListener.incomingMessage2(receivedText);
+						} else if (srvId == 3) {
+							srvListener.incomingMessage3(receivedText);
+						} else if (srvId == 4) {
+							srvListener.incomingMessage4(receivedText);
+						} else if (srvId == 5) {
+							srvListener.incomingMessage5(receivedText);
+						} else {
 
-		} else {
-			Gh.prnte("serverListener br == null");
+						}
+
+					} else {
+						Gh.prnte(serverPort + " serverListener srvListener=null");
+						break;
+					}
+				}
+			} else {
+				Gh.prnte(serverPort + " serverListener receivedText=null breaking out of while listener");
+				break;
+			}
 		}
 
 		Gh.prnt(serverPort + " serverListener Ending all process");
+		reconnecter("server listener");
 	}
 
 	private void closeAll() {
-		//Gh.prnt(serverName + " closeAll start");
+//		Gh.prnt("closeAll start");
 
-//		if (outputStreamWriter != null) {
-//			try {
-//				outputStreamWriter.close();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		} else {
-//			Gh.prnt(serverPort + " closeAll outputStreamWriter == null nothing to close");
-//		}
-//
-//		if (bufferedOutputStream != null) {
-//			try {
-//				bufferedOutputStream.close();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		} else {
-//			Gh.prnt(serverPort + " closeAll bufferedOutputStream == null nothing to close");
-//		}
+		if (outputStreamWriter != null) {
+			try {
+				outputStreamWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			Gh.prnt(serverPort + " closeAll outputStreamWriter == null nothing to close");
+		}
+
+		if (bufferedOutputStream != null) {
+			try {
+				bufferedOutputStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			Gh.prnt(serverPort + " closeAll bufferedOutputStream == null nothing to close");
+		}
 
 		if (serverSocket != null) {
 			try {
 				serverSocket.close();
-				isConnectedToF = false;
 				//Gh.prnt(serverName + " closeAll serverSocket close successful");
 			} catch (IOException e) {
 				Gh.prnte(serverPort + " closeAll serverSocket close failed, e=" + e.getMessage());
@@ -350,7 +306,6 @@ public class Serverg2 implements Runnable {
 		if (socket != null) {
 			try {
 				socket.close();
-				isConnectedToF = false;
 				//Gh.prnt(serverName + " closeAll clientSocket close succesfull");
 			} catch (IOException e) {
 				Gh.prnte(serverPort + " closeAll clientSocket close failed, e=" + e.getMessage());
@@ -359,7 +314,7 @@ public class Serverg2 implements Runnable {
 			//Gh.prnt(serverPort + " closeAll clientSocket == null nothing to close");
 		}
 
-		//Gh.prnt(serverName + " closeAll end");
+//		Gh.prnt("closeAll end");
 	}
 
 	@Override
