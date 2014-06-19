@@ -11,7 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class Clientg2 implements Runnable {
+public class Clientg3 implements Runnable {
 	
 	private Socket					socket					= null;
 	

@@ -8,10 +8,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class Test implements ServerListener {
+public class Tserver implements ServerListener {
 
 	public static void main(String[] args) {
-		Test tst = new Test();
+		Tserver tst = new Tserver();
 		tst.starto();
 	}
 
