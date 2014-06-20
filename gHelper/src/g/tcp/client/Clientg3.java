@@ -21,10 +21,8 @@ public class Clientg3 implements Runnable {
 	private BufferedReader			bufferedReader			= null;
 	
 	public Integer					clientPort				= 0;
-	private boolean					isConnectedToF			= false;
-	private long					lastHbReceivedTms		= 0;
-	private int						receiveHbTimeotTms		= 4000;
-	private int						sendHbEachTms			= 2000;
+	private long					lastPingReceivedTms		= 0;
+	private int						receivePingTimeotTms	= 10000;
 	
 // unique	
 	public String					ip						= "";
@@ -38,47 +36,29 @@ public class Clientg3 implements Runnable {
 			}
 		});
 		
-		Thread receiveHbThr = new Thread(new Runnable() {
+		Thread receivePingThr = new Thread(new Runnable() {
 			public void run() {
 				while (true) {
 					try {
-						Thread.sleep(500);
+						Thread.sleep(2000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 					
-					if ((System.currentTimeMillis() - lastHbReceivedTms) > receiveHbTimeotTms) {
-						Gh.prnt(ip + ":" + clientPort + " HB not reveiced over " + receiveHbTimeotTms + "ms");
-						lastHbReceivedTms = System.currentTimeMillis();
-						reconnecter("HB not received");
+					if ((System.currentTimeMillis() - lastPingReceivedTms) > receivePingTimeotTms) {
+						Gh.prnt(ip + ":" + clientPort + " ping not reveiced over " + receivePingTimeotTms + "ms");
+						lastPingReceivedTms = System.currentTimeMillis();
+						reconnecter("ping not received");
 					}
 				}
 			}
 		});
-		receiveHbThr.setPriority(Thread.MAX_PRIORITY);
-		receiveHbThr.setName("receiveHbThr");
-		receiveHbThr.start();
+		receivePingThr.setPriority(Thread.MAX_PRIORITY);
+		receivePingThr.setName("receivePingThr");
+		receivePingThr.start();
 		
-		Thread sendHbThr = new Thread(new Runnable() {
-			public void run() {
-				while (true) {
-					try {
-						Thread.sleep(sendHbEachTms);
-					} catch (InterruptedException e) {
-						Gh.prnte(ip + ":" + clientPort + " sendHb thread sleep error, e=" + e.getMessage());
-					}
-					
-					try {
-						sendMsg("HB");
-					} catch (Exception e) {
-						Gh.prnte(ip + ":" + clientPort + " sendMsg(HB) error, e=" + e.getMessage());
-					}
-				}
-			}
-		});
-		sendHbThr.setPriority(Thread.MAX_PRIORITY);
-		sendHbThr.setName("sendHbThr");
-		sendHbThr.start();
+		reconnecter("server listener");
+		
 	}
 	
 	private boolean createConnection() {
@@ -159,7 +139,7 @@ public class Clientg3 implements Runnable {
 	
 	public void sendMsg(String text) {
 		//Gh.prnt("client send");
-		if (isConnectedToF && text != null && !"".equals(text) && text.length() > 1) {
+		if (outputStreamWriter != null && text != null && !"".equals(text) && text.length() > 1) {
 			try {
 				//Gh.prnt("Client sendMsg text=" + text);	
 				text = text + '\n';
@@ -167,19 +147,10 @@ public class Clientg3 implements Runnable {
 				outputStreamWriter.flush();
 			} catch (IOException e) {
 				Gh.prnte(ip + ":" + clientPort + " sendMsg exception: " + e.getMessage());
-				if (e.getMessage().contains("Connection reset by peer")) {
-					Gh.prnt(ip + ":" + clientPort + " detected connection reset");
-					isConnectedToF = false;
-					// reconnecter("sendMsg 1");
-				} else {
-					Gh.prnte(ip + ":" + clientPort + " error sendMsg unexpected error, e:" + e.getMessage());
-					isConnectedToF = false;
-					// reconnecter("sendmsg 2");
-				}
+				//e.printStackTrace();
 			}
 		} else {
-			Gh.prnte(ip + ":" + clientPort + " sendMsg not sending because isConnectedToF=" + isConnectedToF + " text=" + text);
-			// reconnecter("sendmsg 3");
+			Gh.prnte(ip + ":" + clientPort + " sendMsg not sending text=" + text);
 		}
 	}
 	
@@ -190,33 +161,26 @@ public class Clientg3 implements Runnable {
 				reconnecterCalled = true;
 				//Gh.prnt(ip + ":" + port + " reconnecter launched caller=" + caller);
 				
-				//sendMsg("reastart");
-				closeAll();
-				boolean createConn = createConnection();
-				
-				if (createConn) {
-					Gh.prnt(ip + ":" + clientPort + " reconnecter,  createConn=true");
-					//Gh.prnt(ip + ":" + port + " reconnecter connected to ip=" + socket.getInetAddress() + " port=" + socket.getPort());					
-					reconnecterCalled = false;
-					isConnectedToF = true;
-					serverListener();
-				} else {
-					Gh.prnte(ip + ":" + clientPort + " reconnecter,  createConn=false");
-					reconnecterCalled = false;
+				while (!createConnection()) {
+					closeAll();
 				}
+				
+				Gh.prnt(ip + ":" + clientPort + " reconnecter,  createConn=true");
+				//Gh.prnt(ip + ":" + port + " reconnecter connected to ip=" + socket.getInetAddress() + " port=" + socket.getPort());					
+				reconnecterCalled = false;
+				serverListener();
 			} else {
 				Gh.prnte(ip + ":" + clientPort + " reconnecter cannot be called because reconnecterCalled=" + reconnecterCalled + "(already called)");
 			}
 		} else {
 			Gh.prnte(ip + ":" + clientPort + " reconnecter failed to launch because ip=" + ip + " caller=" + caller);
-			isConnectedToF = false;
 		}
 	}
 	
 	private void serverListener() {
 		Gh.prnt(ip + ":" + clientPort + " called serverListener");
 		String receivedText = "";
-		while (isConnectedToF) {
+		while (true) {
 			// Gh.prnt("Client serverListener looping");
 			if (bufferedReader != null && socket != null) {
 				try {
@@ -224,32 +188,29 @@ public class Clientg3 implements Runnable {
 					receivedText = bufferedReader.readLine();
 					if (receivedText != null) {
 //						Gh.prnt("Client serverListener received text=" + receivedText);
-						if ("HB".equals(receivedText)) {
-							//Gh.prnt(ip + ":" + clientPort + " received HB");
-							lastHbReceivedTms = System.currentTimeMillis();
-						} else if ("restart".equals(receivedText)) {
-							reconnecter("received over TCP");
-						} else if ("PING".equals(receivedText)) {
+						if ("PING".equals(receivedText)) {
 							//Gh.prnt(ip + ":" + clientPort + " ping received");
+							lastPingReceivedTms = System.currentTimeMillis();
 							sendMsg("PONG");
 						} else {
 							Gh.prnte(ip + ":" + clientPort + " serverListener something wrong received, receivedText=" + receivedText);
 						}
+					} else {
+						Gh.prnte("receivedText=" + receivedText);
+						break;
 					}
 				} catch (IOException e) {
 					Gh.prnte(ip + ":" + clientPort + " serverListener error on readLine, e=" + e.getMessage());
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
+					//e.printStackTrace();
+					break;
 				}
-				
 			} else {
 				Gh.prnte(ip + ":" + clientPort + " serverListener text receiver text=" + receivedText + " bufferedReader=null or socket=null");
+				break;
 			}
 		}
 		Gh.prnt(ip + ":" + clientPort + " exiting serverListener");
+		reconnecter("server listener");
 	}
 	
 	public void closeAll() {
@@ -258,23 +219,21 @@ public class Clientg3 implements Runnable {
 			try {
 				// osw.flush();
 				outputStreamWriter.close();
-				isConnectedToF = false;
 			} catch (IOException e1) {
 				//Gh.prnte("closeConn, e: " + e1.getMessage());
 			}
 		} else {
-			isConnectedToF = false;
+			
 		}
 		
 		if (socket != null) {
 			try {
 				socket.close();
-				isConnectedToF = false;
 			} catch (IOException e) {
 				//Gh.prnte("Client closeConn, e: " + e.getMessage());
 			}
 		} else {
-			isConnectedToF = false;
+			
 		}
 		
 		//Gh.prnt("Client closeConn End");

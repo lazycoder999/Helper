@@ -23,9 +23,9 @@ public class Serverg3 implements Runnable {
 	
 	public int						serverPort;
 	
-	private int						sendHbEachTms			= 2000;
 	private int						sendPingEachTms			= 5000;
 	private long					lastPingSentTns			= 0;
+	private int						connectionTimeout		= 30000;
 	
 // unique	
 	
@@ -49,27 +49,6 @@ public class Serverg3 implements Runnable {
 		});
 		
 		reconnecter("start server");
-		
-		Thread sendHbThr = new Thread(new Runnable() {
-			public void run() {
-				while (true) {
-					try {
-						Thread.sleep(sendHbEachTms);
-					} catch (InterruptedException e) {
-						Gh.prnte(serverPort + " sendHb thread sleep error, e=" + e.getMessage());
-					}
-					
-					try {
-						sendMsg("HB");
-					} catch (Exception e) {
-						Gh.prnte(serverPort + " sendMsg(HB) error, e=" + e.getMessage());
-					}
-				}
-			}
-		});
-		sendHbThr.setPriority(Thread.MAX_PRIORITY);
-		sendHbThr.setName("sendHbThr");
-		sendHbThr.start();
 		
 		Thread sendPingThr = new Thread(new Runnable() {
 			public void run() {
@@ -96,15 +75,9 @@ public class Serverg3 implements Runnable {
 	
 	private boolean createConnection() {
 		serverSocket = null;
-		//012 21
-		//021 21
-		//102 21
-		//120 21
-		//201 21
-		//210 21
 		try {
 			serverSocket = new ServerSocket(serverPort);
-			serverSocket.setSoTimeout(5000);
+			serverSocket.setSoTimeout(connectionTimeout);
 			serverSocket.setPerformancePreferences(2, 0, 1);
 		} catch (IOException e) {
 			Gh.prnte(serverPort + " createServerSocketConnection new serverSocket failed on port=" + serverPort);
@@ -117,7 +90,7 @@ public class Serverg3 implements Runnable {
 				Gh.prnt(serverPort + " createSocketConnection clientSocket = serverSocket.accept() waiting on incomming connection...");
 				socket = serverSocket.accept();
 				socket.setTcpNoDelay(true);
-				socket.setSoTimeout(5000);
+				socket.setSoTimeout(connectionTimeout);
 				socket.setPerformancePreferences(2, 0, 1);
 				Gh.prnt(serverPort + " createSocketConnection clientSocket succesful");
 			} catch (IOException e) {
@@ -175,7 +148,8 @@ public class Serverg3 implements Runnable {
 				outputStreamWriter.write(text, 0, text.length());
 				outputStreamWriter.flush();
 			} catch (IOException e) {
-				Gh.prnte(serverPort + " sendMsg error sening to Client");
+				Gh.prnte(serverPort + " sendMsg error sening to Client" + e.getMessage());
+				//e.printStackTrace();
 			}
 		} else {
 			Gh.prnte(serverPort + " sendMsg outputStreamWriter==null");
@@ -218,7 +192,7 @@ public class Serverg3 implements Runnable {
 				try {
 					receivedText = bufferedReader.readLine();
 				} catch (Exception e) {
-					Gh.prnte(serverPort + " br.readLine exception");
+					Gh.prnte(serverPort + " br.readLine exception=" + e.getMessage());
 					receivedText = "";
 					break;
 				}
@@ -229,9 +203,7 @@ public class Serverg3 implements Runnable {
 			}
 			//Gh.prnt(serverName + " serverListener received inputLine=" + receivedText);
 			if (receivedText != null) {
-				if ("restart".equals(receivedText)) {
-					break;
-				} else if ("PONG".equals(receivedText)) {
+				if ("PONG".equals(receivedText)) {
 					float latency = (System.nanoTime() - lastPingSentTns);
 					latency = latency / 1000000;
 					if (latency > 1) {
