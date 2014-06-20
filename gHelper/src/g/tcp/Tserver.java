@@ -4,10 +4,6 @@ import g.tcp.server.ServerListener;
 import g.tcp.server.Serverg3;
 import helper.pack.Gh;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 public class Tserver implements ServerListener {
 
 	public static void main(String[] args) {
@@ -34,41 +30,11 @@ public class Tserver implements ServerListener {
 			e1.printStackTrace();
 		}
 
-		Thread consoleListenerThread = new Thread(new Runnable() {
-			public void run() {
-				while (true) {
-					BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-					String line = "";
-
-					while (line.equalsIgnoreCase("quit") == false) {
-						try {
-							line = in.readLine();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-
-//						if (line.equals("cclose")) {
-//							client.closeAll();
-//						}
-
-					}
-
-					try {
-						in.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-		consoleListenerThread.setPriority(Thread.MIN_PRIORITY);
-		consoleListenerThread.start();
 	}
 
 	@Override
 	public void incomingMessage1(String line) {
-		// TODO Auto-generated method stub
-
+		Gh.prnt("server receveived " + line);
 	}
 
 	@Override

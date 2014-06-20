@@ -12,44 +12,45 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Serverg3 implements Runnable {
-	
-	private Gh						gh						= new Gh();
-	private Socket					socket					= null;
-	
-	private OutputStreamWriter		outputStreamWriter		= null;
-	private BufferedOutputStream	bufferedOutputStream	= null;
-	
-	private BufferedReader			bufferedReader			= null;
-	
-	public int						serverPort;
-	
-	private int						sendPingEachTms			= 5000;
-	private long					lastPingSentTns			= 0;
-	private int						connectionTimeout		= 30000;
-	
+
+	private Socket socket = null;
+
+	private OutputStreamWriter outputStreamWriter = null;
+	private BufferedOutputStream bufferedOutputStream = null;
+	private BufferedReader bufferedReader = null;
+
+	public Integer serverPort = 0;
+	private int connectionTimeout = 30000;
+
+	private int sendPingEachTms = 5000;
+	private long lastPingSentTns = 0;
+
 // unique	
-	
-	private ServerSocket			serverSocket			= null;
-	
-	public byte						srvId					= 0;
-	private ServerListener			srvListener;
-	
+
+	private ServerSocket serverSocket = null;
+	private Gh gh = new Gh();
+	public byte srvId = 0;
+	private ServerListener srvListener;
+
 // unique
-	
+
 	public void setServerListener(ServerListener srvListener) {
 		this.srvListener = srvListener;
 	}
-	
+
 // common
-	private void startServerg2() {
+	@Override
+	public void run() {
+		Gh.runPrintLogToConsole();
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				closeAll();
 			}
 		});
-		
+
 		reconnecter("start server");
-		
+
 		Thread sendPingThr = new Thread(new Runnable() {
 			public void run() {
 				while (true) {
@@ -58,7 +59,7 @@ public class Serverg3 implements Runnable {
 					} catch (InterruptedException e) {
 						Gh.prnte(serverPort + " sendPing thread sleep error, e=" + e.getMessage());
 					}
-					
+
 					try {
 						lastPingSentTns = System.nanoTime();
 						sendMsg("PING");
@@ -72,7 +73,7 @@ public class Serverg3 implements Runnable {
 		sendPingThr.setName("sendPingThr");
 		sendPingThr.start();
 	}
-	
+
 	private boolean createConnection() {
 		serverSocket = null;
 		try {
@@ -84,7 +85,7 @@ public class Serverg3 implements Runnable {
 			serverSocket = null;
 			return false;
 		}
-		
+
 		if (serverSocket != null) {
 			try {
 				Gh.prnt(serverPort + " createSocketConnection clientSocket = serverSocket.accept() waiting on incomming connection...");
@@ -102,7 +103,7 @@ public class Serverg3 implements Runnable {
 			Gh.prnte(serverPort + " createSocketConnection serverSocket == null");
 			return false;
 		}
-		
+
 		if (socket != null) {
 			try {
 				bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -112,7 +113,7 @@ public class Serverg3 implements Runnable {
 				Gh.prnte(serverPort + " createReader BufferedReader, e: " + e1.getMessage());
 				return false;
 			}
-			
+
 			try {
 				bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
 				// Gh.prnt("Client createWriter bufferedOutputStream succesfull");
@@ -125,7 +126,7 @@ public class Serverg3 implements Runnable {
 			Gh.prnte(serverPort + " createReader clientSocket == null");
 			return false;
 		}
-		
+
 		if (bufferedOutputStream != null) {
 			try {
 				outputStreamWriter = new OutputStreamWriter(bufferedOutputStream, "US-ASCII");
@@ -140,7 +141,7 @@ public class Serverg3 implements Runnable {
 			return false;
 		}
 	}
-	
+
 	public void sendMsg(String text) {
 		if (outputStreamWriter != null) {
 			try {
@@ -148,24 +149,23 @@ public class Serverg3 implements Runnable {
 				outputStreamWriter.write(text, 0, text.length());
 				outputStreamWriter.flush();
 			} catch (IOException e) {
-				Gh.prnte(serverPort + " sendMsg error sening to Client" + e.getMessage());
-				//e.printStackTrace();
+				Gh.prnte(serverPort + " sendMsg error = " + e.getMessage());
 			}
 		} else {
-			Gh.prnte(serverPort + " sendMsg outputStreamWriter==null");
+			Gh.prnte(serverPort + " sendMsg outputStreamWriter=" + outputStreamWriter);
 		}
 	}
-	
+
 	private void reconnecter(String calletId) {
 		Thread startThr = new Thread(new Runnable() {
 			public void run() {
 				Gh.prnt(serverPort + " reconnecter called callerId=" + calletId);
 				closeAll();
-				
+
 				while (!createConnection()) {
 					closeAll();
 				}
-				
+
 				Thread serverListenerThr = new Thread(new Runnable() {
 					public void run() {
 						serverListener();
@@ -180,10 +180,10 @@ public class Serverg3 implements Runnable {
 		startThr.setName("startThr");
 		startThr.start();
 	}
-	
+
 	private void serverListener() {
 //		Gh.prnt(serverName + " serverListener Start");
-		
+
 		Gh.prnt(serverPort + " serverListener start listening (before while)");
 		String receivedText = "";
 		while (true) {
@@ -196,7 +196,7 @@ public class Serverg3 implements Runnable {
 					receivedText = "";
 					break;
 				}
-				
+
 			} else {
 				receivedText = null;
 				break;
@@ -223,9 +223,9 @@ public class Serverg3 implements Runnable {
 						} else if (srvId == 5) {
 							srvListener.incomingMessage5(receivedText);
 						} else {
-							
+
 						}
-						
+
 					} else {
 						Gh.prnte(serverPort + " serverListener srvListener=null");
 						break;
@@ -236,14 +236,14 @@ public class Serverg3 implements Runnable {
 				break;
 			}
 		}
-		
+
 		Gh.prnt(serverPort + " serverListener Ending all process");
 		reconnecter("server listener");
 	}
-	
+
 	private void closeAll() {
 //		Gh.prnt("closeAll start");
-		
+
 		if (outputStreamWriter != null) {
 			try {
 				outputStreamWriter.close();
@@ -253,7 +253,7 @@ public class Serverg3 implements Runnable {
 		} else {
 			Gh.prnt(serverPort + " closeAll outputStreamWriter == null nothing to close");
 		}
-		
+
 		if (bufferedOutputStream != null) {
 			try {
 				bufferedOutputStream.close();
@@ -263,7 +263,7 @@ public class Serverg3 implements Runnable {
 		} else {
 			Gh.prnt(serverPort + " closeAll bufferedOutputStream == null nothing to close");
 		}
-		
+
 		if (serverSocket != null) {
 			try {
 				serverSocket.close();
@@ -274,7 +274,7 @@ public class Serverg3 implements Runnable {
 		} else {
 			//Gh.prnt(serverName + " closeAll serverSocket == null nothing to close");
 		}
-		
+
 		if (socket != null) {
 			try {
 				socket.close();
@@ -285,13 +285,8 @@ public class Serverg3 implements Runnable {
 		} else {
 			//Gh.prnt(serverPort + " closeAll clientSocket == null nothing to close");
 		}
-		
+
 //		Gh.prnt("closeAll end");
 	}
-	
-	@Override
-	public void run() {
-		startServerg2();
-	}
-	
+
 }
