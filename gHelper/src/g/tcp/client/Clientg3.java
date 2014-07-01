@@ -12,35 +12,35 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Clientg3 implements Runnable {
-
-	private Socket socket = null;
-
-	private OutputStreamWriter outputStreamWriter = null;
-	private BufferedOutputStream bufferedOutputStream = null;
-	private BufferedReader bufferedReader = null;
-
-	public Integer clientPort = 0;
-	private int connectionTimeout = 30000;
-
-	private int receivePingTimeotTms = 10000;
-	private long lastPingReceivedTms = 0;
-
+	
+	private Socket					socket					= null;
+	
+	private OutputStreamWriter		outputStreamWriter		= null;
+	private BufferedOutputStream	bufferedOutputStream	= null;
+	private BufferedReader			bufferedReader			= null;
+	
+	public Integer					clientPort				= 0;
+	private int						connectionTimeout		= 30000;
+	
+	private int						receivePingTimeotTms	= 10000;
+	private long					lastPingReceivedTms		= 0;
+	
 // unique	
-	public String ip = "";
-	private boolean reconnecterCalled = false;
-	private String name;
-
+	public String					ip						= "";
+	private boolean					reconnecterCalled		= false;
+	private String					name;
+	
 // common
 	@Override
 	public void run() {
 		Gh.runPrintLogToConsole();
-
+		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				closeAll();
 			}
 		});
-
+		
 		Thread receivePingThr = new Thread(new Runnable() {
 			public void run() {
 				while (true) {
@@ -49,7 +49,7 @@ public class Clientg3 implements Runnable {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-
+					
 					if ((System.currentTimeMillis() - lastPingReceivedTms) > receivePingTimeotTms) {
 						Gh.prnt(name + "ping not reveiced over " + receivePingTimeotTms + "ms");
 						lastPingReceivedTms = System.currentTimeMillis();
@@ -61,28 +61,28 @@ public class Clientg3 implements Runnable {
 		receivePingThr.setPriority(Thread.MAX_PRIORITY);
 		receivePingThr.setName("receivePingThr");
 		receivePingThr.start();
-
+		
 		reconnecter("server listener");
 	}
-
+	
 	private boolean createConnection() {
 		name = ip + ":" + clientPort + " ";
 		//Gh.prnt(ip + ":" + port + " createSocketConnection Start");		
-
+		
 		if (ip == null || "".equals(ip)) {
 			Gh.prnte("Client createSocketConnection ip not set, ip=" + ip + " clientPort=" + clientPort);
 			return false;
 		}
-
+		
 		Integer zero = new Integer(0);
-
+		
 		if (clientPort == null || zero.equals(clientPort)) {
 			Gh.prnte("Client createSocketConnection port not set, ip=" + ip + " clientPort=" + clientPort);
 			return false;
 		}
-
+		
 		socket = null;
-
+		
 		try {
 			socket = new Socket(ip, clientPort);
 			socket.setSoTimeout(connectionTimeout);
@@ -97,10 +97,10 @@ public class Clientg3 implements Runnable {
 			socket = null;
 			return false;
 		}
-
+		
 		bufferedOutputStream = null;
 		outputStreamWriter = null;
-
+		
 		if (socket != null) {
 			try {
 				bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
@@ -108,7 +108,7 @@ public class Clientg3 implements Runnable {
 				Gh.prnte(name + "createWriter bufferedOutputStream failed, e=" + e.getMessage());
 				bufferedOutputStream = null;
 			}
-
+			
 			if (bufferedOutputStream != null) {
 				try {
 					outputStreamWriter = new OutputStreamWriter(bufferedOutputStream, "US-ASCII");
@@ -121,7 +121,7 @@ public class Clientg3 implements Runnable {
 			} else {
 				return false;
 			}
-
+			
 			try {
 				bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				return true;
@@ -135,9 +135,9 @@ public class Clientg3 implements Runnable {
 			Gh.prnte(name + "socket==null");
 			return false;
 		}
-
+		
 	}
-
+	
 	public void sendMsg(String text) {
 		if (outputStreamWriter != null && text != null && !"".equals(text) && text.length() > 1) {
 			try {
@@ -152,20 +152,20 @@ public class Clientg3 implements Runnable {
 			Gh.prnte(name + "sendMsg not sending text=" + text);
 		}
 	}
-
+	
 	private void reconnecter(final String caller) {
 		Gh.prnt(name + "reconnecter called=" + caller);
 		if (ip != null && !"".equals(ip)) {
 			if (!reconnecterCalled) {
 				reconnecterCalled = true;
-
+				
 				while (!createConnection()) {
 					closeAll();
-//					try {
-//						Thread.sleep(1000);
-//					} catch (InterruptedException e) {
-//						e.printStackTrace();
-//					}
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 				reconnecterCalled = false;
 				serverListener();
@@ -176,7 +176,7 @@ public class Clientg3 implements Runnable {
 			Gh.prnte(name + "reconnecter failed to launch because ip=" + ip + " caller=" + caller);
 		}
 	}
-
+	
 	private void serverListener() {
 		Gh.prnt(name + "called serverListener");
 		String receivedText = "";
@@ -207,7 +207,7 @@ public class Clientg3 implements Runnable {
 		Gh.prnt(name + "exiting serverListener");
 		reconnecter("server listener");
 	}
-
+	
 	public void closeAll() {
 		//Gh.prnt("Client closeConn Start");
 		if (outputStreamWriter != null) {
@@ -218,9 +218,9 @@ public class Clientg3 implements Runnable {
 				//Gh.prnte("closeConn, e: " + e1.getMessage());
 			}
 		} else {
-
+			
 		}
-
+		
 		if (socket != null) {
 			try {
 				socket.close();
@@ -228,10 +228,10 @@ public class Clientg3 implements Runnable {
 				//Gh.prnte("Client closeConn, e: " + e.getMessage());
 			}
 		} else {
-
+			
 		}
-
+		
 		//Gh.prnt("Client closeConn End");
 	}
-
+	
 }

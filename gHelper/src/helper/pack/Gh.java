@@ -23,14 +23,16 @@ import java.util.Set;
 public class Gh {
 	
 	public static String[]			logArray		= new String[1000];
+	public static long[]			logArrayTime	= new long[1000];
 	private static String[]			logArrayTmp		= new String[1000];
+	public static long[]			logArrayTimeTmp	= new long[1000];
 	private static short			logArrayI		= 0, logArrayIprinted = 0;
 	
 	public static SimpleDateFormat	ft				= new SimpleDateFormat("yyyy-MM-dd");
-	public SimpleDateFormat			ft1				= new SimpleDateFormat("H:mm:ss.SSS");
+	public static SimpleDateFormat	ft1				= new SimpleDateFormat("H:mm:ss.SSS");
 	public static SimpleDateFormat	ft2				= new SimpleDateFormat("yyyy-MM-dd H:mm:ss.SSS");
-	public static SimpleDateFormat	ft3				= new SimpleDateFormat("H:mm:ss");
-	public static SimpleDateFormat	ft4				= new SimpleDateFormat("yyyy-MM-dd H:mm:ss");
+	public SimpleDateFormat			ft3				= new SimpleDateFormat("H:mm:ss");
+	public SimpleDateFormat			ft4				= new SimpleDateFormat("yyyy-MM-dd H:mm:ss");
 	private static SimpleDateFormat	ft5				= new SimpleDateFormat("yyyy-MM");
 	public DecimalFormat			df2				= new DecimalFormat("#.##");
 	
@@ -88,64 +90,12 @@ public class Gh {
 		return ft3.format(System.currentTimeMillis());
 	}
 	
-	public String tl() {
-		return ft2.format(System.currentTimeMillis());
-	}
-	
 	public static String td() {
 		return ft.format(System.currentTimeMillis());
 	}
 	
 	public static String td2() {
 		return ft5.format(System.currentTimeMillis());
-	}
-	
-	public String f2(float value) {
-		String result = "77";
-		
-		try {
-			result = String.format("%.2f", value);
-		} catch (Exception e) {
-			prnte("f2, e=" + e.getMessage());
-		}
-		
-		return result;
-	}
-	
-	public String f2(double value) {
-		String result = "77";
-		
-		try {
-			result = String.format("%.2f", value);
-		} catch (Exception e) {
-			prnte("f2, e=" + e.getMessage());
-		}
-		
-		return result;
-	}
-	
-	public String f5(float value) {
-		String result = "77";
-		
-		try {
-			result = String.format("%.5f", value);
-		} catch (Exception e) {
-			prnte("f5, e=" + e.getMessage());
-		}
-		
-		return result;
-	}
-	
-	public String f5(double value) {
-		String result = "77";
-		
-		try {
-			result = String.format("%.5f", value);
-		} catch (Exception e) {
-			prnte("f5, e=" + e.getMessage());
-		}
-		
-		return result;
 	}
 	
 // writers Start
@@ -156,8 +106,9 @@ public class Gh {
 					&& !logArray[i].contains("[tickstat]")) {
 				
 				String text = logArray[i].replace("[prices]", "").replace("[ok]", "");
-				text = text.substring(11);
+				//text = text.substring(11);
 				text = text.replace(";", " ");
+				text = ft1.format(logArrayTime[i]) + text;
 				
 				if (logArray[i].contains("[err]")) {
 					System.err.println(text);
@@ -222,10 +173,9 @@ public class Gh {
 	
 	public synchronized static void prnt(String text) {
 		
-		String text2 = null;
 		try {
-			text2 = ft2.format(System.currentTimeMillis()) + ";[ok] " + text;
-			logArray[logArrayI] = text2;
+			logArrayTime[logArrayI] = System.currentTimeMillis();
+			logArray[logArrayI] = ";[ok] " + text;
 			logArrayI++;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -236,8 +186,10 @@ public class Gh {
 			logArrayI = 0;
 			
 			logArrayTmp = logArray.clone();
+			logArrayTimeTmp = logArrayTime.clone();
 			for (int i = 0; i < logArray.length; i++) {
 				logArray[i] = null;
+				logArrayTime[i] = 0;
 			}
 			
 			Thread writeAllThread = new Thread(new Runnable() {
@@ -253,10 +205,10 @@ public class Gh {
 	}
 	
 	public synchronized static void prnte(String text) {
-		String text2 = null;
+		
 		try {
-			text2 = ft2.format(System.currentTimeMillis()) + ";[err]" + text;
-			logArray[logArrayI] = text2;
+			logArrayTime[logArrayI] = System.currentTimeMillis();
+			logArray[logArrayI] = ";[err] " + text;
 			logArrayI++;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -267,8 +219,10 @@ public class Gh {
 			logArrayI = 0;
 			
 			logArrayTmp = logArray.clone();
+			logArrayTimeTmp = logArrayTime.clone();
 			for (int i = 0; i < logArray.length; i++) {
 				logArray[i] = null;
+				logArrayTime[i] = 0;
 			}
 			
 			Thread writeAllThread = new Thread(new Runnable() {
@@ -297,6 +251,7 @@ public class Gh {
 			System.out.println("writeAll folderName=" + folderName);
 			for (short i = 0; i < logArrayItmp; i++) {
 				
+				logArrayTmp[i] = ft2.format(logArrayTimeTmp[i]) + logArrayTmp[i];
 				if (logArrayTmp[i].contains("[prices]")) {
 					try {
 						String textTmp = logArrayTmp[i].replace("[ok] ", "");
@@ -622,5 +577,24 @@ public class Gh {
 		}
 		
 		return __tmp;
+	}
+	
+	private static final int	POW10[]	= { 1, 10, 100, 1000, 10000, 100000, 1000000 };
+	
+	public String g2Round(double val, int precision) {
+		StringBuilder sb = new StringBuilder();
+		if (val < 0) {
+			sb.append('-');
+			val = -val;
+		}
+		int exp = POW10[precision];
+		long lval = (long) (val * exp + 0.5);
+		sb.append(lval / exp).append('.');
+		long fval = lval % exp;
+		for (int p = precision - 1; p > 0 && fval < POW10[p]; p--) {
+			sb.append('0');
+		}
+		sb.append(fval);
+		return sb.toString();
 	}
 }
