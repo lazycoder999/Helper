@@ -1,12 +1,12 @@
 package g.tcp;
 
 import g.tcp.client.Clientg3;
-import helper.pack.Gh;
+import helper.pack.Glog;
 
 public class Tclient {
 
 	public static void main(String[] args) {
-		Gh.runPrintLogToConsole();
+		Glog.runPrintLogToConsole();
 		Clientg3 client = new Clientg3();
 
 		client.clientPort = 5566;

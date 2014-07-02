@@ -2,7 +2,7 @@ package g.tcp;
 
 import g.tcp.server.ServerListener;
 import g.tcp.server.Serverg3;
-import helper.pack.Gh;
+import helper.pack.Glog;
 
 public class Tserver implements ServerListener {
 
@@ -12,7 +12,7 @@ public class Tserver implements ServerListener {
 	}
 
 	public void starto() {
-		Gh.runPrintLogToConsole();
+		Glog.runPrintLogToConsole();
 
 		Serverg3 server = new Serverg3();
 
@@ -34,7 +34,7 @@ public class Tserver implements ServerListener {
 
 	@Override
 	public void incomingMessage1(String line) {
-		Gh.prnt("server receveived " + line);
+		Glog.prnt("server receveived " + line);
 	}
 
 	@Override

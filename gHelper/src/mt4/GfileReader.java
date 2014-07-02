@@ -1,6 +1,6 @@
 package mt4;
 
-import helper.pack.Gh;
+import helper.pack.Glog;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class GfileReader {
-	
+
 //	public static void main(String[] args) {
 //		//"C://Users//kepe//AppData//Roaming//MetaQuotes//Terminal//299541A8EEF200DE23B8B72470C7D8FA//MQL4//Files//pipe.txt";
 //		//"C://Users//tiod//AppData//Roaming//MetaQuotes//Terminal//CCD68BFB06049A8615C607C3F6AD69B7//MQL4//Files//pipe.txt";
@@ -17,51 +17,51 @@ public class GfileReader {
 //		String precise = "//MQL4//Files//poga.txt";
 //		nm.StartClient(location + precise, 25, (byte) 1);
 //	}
-	
-	private ReaderListener	readerListener;
-	
+
+	private ReaderListener readerListener;
+
 	public void setReadrListener(ReaderListener readerListener) {
 		this.readerListener = readerListener;
 	}
-	
+
 	public void StartClient(String fileName, int refreshRate, byte listenerId, boolean sendOnChange, byte lineNumb) {
-		Gh.runPrintLogToConsole();
-		
+		Glog.runPrintLogToConsole();
+
 		String prev_line = "aaa";
 		RandomAccessFile pipe = null;
 		while (true) {
-			
+
 			File myTestFile = new File(fileName);
 			boolean fileRead = myTestFile.canRead();
 			boolean fileExists = myTestFile.exists();
 			boolean fileIs = myTestFile.isFile();
-			
+
 			if (fileRead && fileExists && fileIs) {
-				
+
 				pipe = null;
-				
+
 				try {
 					pipe = new RandomAccessFile(fileName, "r");
 				} catch (FileNotFoundException e) {
-					Gh.prnte("manual checks error 1");
+					Glog.prnte("manual checks error 1");
 					e.printStackTrace();
 				} catch (SecurityException e) {
-					Gh.prnte("manual checks error 2");
+					Glog.prnte("manual checks error 2");
 					e.printStackTrace();
 				} catch (Exception e) {
-					Gh.prnte("manual checks error 3");
+					Glog.prnte("manual checks error 3");
 					e.printStackTrace();
 				}
-				
+
 				if (pipe != null) {
 					String line = null;
 					byte lineNumbCnt = 0;
 					try {
 						while (null != (line = pipe.readLine()) && pipe != null) {
 							if ((!prev_line.equals(line) || !sendOnChange) && lineNumbCnt == lineNumb) {
-								//Gh.prnt("readed line=" + line);
+								//Glog.prnt("readed line=" + line);
 								prev_line = line;
-								
+
 								if (listenerId == 1) {
 									readerListener.incomingFileMsg1(prev_line);
 								} else if (listenerId == 2) {
@@ -85,10 +85,10 @@ public class GfileReader {
 					}
 				}
 			} else {
-				Gh.prnte("fileRead=" + fileRead + " fileExists=" + fileExists + " fileIs=" + fileIs);
-				Gh.prnte("fileName=" + fileName + " listenerId=" + listenerId);
+				Glog.prnte("fileRead=" + fileRead + " fileExists=" + fileExists + " fileIs=" + fileIs);
+				Glog.prnte("fileName=" + fileName + " listenerId=" + listenerId);
 			}
 		}
-		
+
 	}
 }

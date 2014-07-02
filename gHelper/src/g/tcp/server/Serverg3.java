@@ -1,6 +1,7 @@
 package g.tcp.server;
 
 import helper.pack.Gh;
+import helper.pack.Glog;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -12,59 +13,59 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Serverg3 implements Runnable {
-	
-	private Socket					socket					= null;
-	
-	private OutputStreamWriter		outputStreamWriter		= null;
-	private BufferedOutputStream	bufferedOutputStream	= null;
-	private BufferedReader			bufferedReader			= null;
-	
-	public Integer					serverPort				= 0;
-	private int						connectionTimeout		= 30000;
-	
-	private int						sendPingEachTms			= 5000;
-	private long					lastPingSentTns			= 0;
-	
+
+	private Socket socket = null;
+
+	private OutputStreamWriter outputStreamWriter = null;
+	private BufferedOutputStream bufferedOutputStream = null;
+	private BufferedReader bufferedReader = null;
+
+	public Integer serverPort = 0;
+	private int connectionTimeout = 30000;
+
+	private int sendPingEachTms = 5000;
+	private long lastPingSentTns = 0;
+
 // unique	
-	
-	private ServerSocket			serverSocket			= null;
-	private Gh						gh						= new Gh();
-	public byte						srvId					= 0;
-	private ServerListener			srvListener;
-	
+
+	private ServerSocket serverSocket = null;
+	private Gh gh = new Gh();
+	public byte srvId = 0;
+	private ServerListener srvListener;
+
 // unique
-	
+
 	public void setServerListener(ServerListener srvListener) {
 		this.srvListener = srvListener;
 	}
-	
+
 // common
 	@Override
 	public void run() {
-		Gh.runPrintLogToConsole();
-		
+		Glog.runPrintLogToConsole();
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				closeAll();
 			}
 		});
-		
+
 		reconnecter("start server");
-		
+
 		Thread sendPingThr = new Thread(new Runnable() {
 			public void run() {
 				while (true) {
 					try {
 						Thread.sleep(sendPingEachTms);
 					} catch (InterruptedException e) {
-						Gh.prnte(serverPort + " sendPing thread sleep error, e=" + e.getMessage());
+						Glog.prnte(serverPort + " sendPing thread sleep error, e=" + e.getMessage());
 					}
-					
+
 					try {
 						lastPingSentTns = System.nanoTime();
 						sendMsg("PING");
 					} catch (Exception e) {
-						Gh.prnte(serverPort + " sendMsg(PING) error, e=" + e.getMessage());
+						Glog.prnte(serverPort + " sendMsg(PING) error, e=" + e.getMessage());
 					}
 				}
 			}
@@ -73,7 +74,7 @@ public class Serverg3 implements Runnable {
 		sendPingThr.setName("sendPingThr");
 		sendPingThr.start();
 	}
-	
+
 	private boolean createConnection() {
 		serverSocket = null;
 		try {
@@ -81,59 +82,59 @@ public class Serverg3 implements Runnable {
 			serverSocket.setSoTimeout(connectionTimeout);
 			serverSocket.setPerformancePreferences(2, 0, 1);
 		} catch (IOException e) {
-			Gh.prnte(serverPort + " createServerSocketConnection new serverSocket failed on port=" + serverPort);
+			Glog.prnte(serverPort + " createServerSocketConnection new serverSocket failed on port=" + serverPort);
 			serverSocket = null;
 			return false;
 		}
-		
+
 		if (serverSocket != null) {
 			try {
-				Gh.prnt(serverPort + " createSocketConnection clientSocket = serverSocket.accept() waiting on incomming connection...");
+				Glog.prnt(serverPort + " createSocketConnection clientSocket = serverSocket.accept() waiting on incomming connection...");
 				socket = serverSocket.accept();
 				socket.setTcpNoDelay(true);
 				socket.setSoTimeout(connectionTimeout);
 				socket.setPerformancePreferences(2, 0, 1);
-				Gh.prnt(serverPort + " createSocketConnection clientSocket succesful");
+				Glog.prnt(serverPort + " createSocketConnection clientSocket succesful");
 			} catch (IOException e) {
-				Gh.prnte(serverPort + " createSocketConnection clientSocket failed, e=" + e.getMessage());
+				Glog.prnte(serverPort + " createSocketConnection clientSocket failed, e=" + e.getMessage());
 				socket = null;
 				return false;
 			}
 		} else {
-			Gh.prnte(serverPort + " createSocketConnection serverSocket == null");
+			Glog.prnte(serverPort + " createSocketConnection serverSocket == null");
 			return false;
 		}
-		
+
 		if (socket != null) {
 			try {
 				bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				bufferedReader = null;
-				Gh.prnte(serverPort + " createReader BufferedReader, e: " + e1.getMessage());
+				Glog.prnte(serverPort + " createReader BufferedReader, e: " + e1.getMessage());
 				return false;
 			}
-			
+
 			try {
 				bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
-				// Gh.prnt("Client createWriter bufferedOutputStream succesfull");
+				// Glog.prnt("Client createWriter bufferedOutputStream succesfull");
 			} catch (IOException e) {
-				Gh.prnte("Client createWriter bufferedOutputStream failed, e=" + e.getMessage());
+				Glog.prnte("Client createWriter bufferedOutputStream failed, e=" + e.getMessage());
 				bufferedOutputStream = null;
 				return false;
 			}
 		} else {
-			Gh.prnte(serverPort + " createReader clientSocket == null");
+			Glog.prnte(serverPort + " createReader clientSocket == null");
 			return false;
 		}
-		
+
 		if (bufferedOutputStream != null) {
 			try {
 				outputStreamWriter = new OutputStreamWriter(bufferedOutputStream, "US-ASCII");
-				// Gh.prnt("Client createWriter bufferedOutputStream succesfull");
+				// Glog.prnt("Client createWriter bufferedOutputStream succesfull");
 				return true;
 			} catch (UnsupportedEncodingException e) {
-				Gh.prnte("Client createWriter bufferedOutputStream failed, e=" + e.getMessage());
+				Glog.prnte("Client createWriter bufferedOutputStream failed, e=" + e.getMessage());
 				outputStreamWriter = null;
 				return false;
 			}
@@ -141,7 +142,7 @@ public class Serverg3 implements Runnable {
 			return false;
 		}
 	}
-	
+
 	public void sendMsg(String text) {
 		if (outputStreamWriter != null) {
 			try {
@@ -149,23 +150,23 @@ public class Serverg3 implements Runnable {
 				outputStreamWriter.write(text, 0, text.length());
 				outputStreamWriter.flush();
 			} catch (IOException e) {
-				Gh.prnte(serverPort + " sendMsg error = " + e.getMessage());
+				Glog.prnte(serverPort + " sendMsg error = " + e.getMessage());
 			}
 		} else {
-			Gh.prnte(serverPort + " sendMsg outputStreamWriter=" + outputStreamWriter);
+			Glog.prnte(serverPort + " sendMsg outputStreamWriter=" + outputStreamWriter);
 		}
 	}
-	
+
 	private void reconnecter(String calletId) {
 		Thread startThr = new Thread(new Runnable() {
 			public void run() {
-				Gh.prnt(serverPort + " reconnecter called callerId=" + calletId);
+				Glog.prnt(serverPort + " reconnecter called callerId=" + calletId);
 				closeAll();
-				
+
 				while (!createConnection()) {
 					closeAll();
 				}
-				
+
 				Thread serverListenerThr = new Thread(new Runnable() {
 					public void run() {
 						serverListener();
@@ -180,11 +181,11 @@ public class Serverg3 implements Runnable {
 		startThr.setName("startThr");
 		startThr.start();
 	}
-	
+
 	private void serverListener() {
-//		Gh.prnt(serverName + " serverListener Start");
-		
-		Gh.prnt(serverPort + " serverListener start listening (before while)");
+//		Glog.prnt(serverName + " serverListener Start");
+
+		Glog.prnt(serverPort + " serverListener start listening (before while)");
 		String receivedText = "";
 		while (true) {
 			if (bufferedReader != null) {
@@ -192,24 +193,24 @@ public class Serverg3 implements Runnable {
 				try {
 					receivedText = bufferedReader.readLine();
 				} catch (Exception e) {
-					Gh.prnte(serverPort + " br.readLine exception=" + e.getMessage());
+					Glog.prnte(serverPort + " br.readLine exception=" + e.getMessage());
 					receivedText = "";
 					break;
 				}
-				
+
 			} else {
 				receivedText = null;
 				break;
 			}
-			//Gh.prnt(serverName + " serverListener received inputLine=" + receivedText);
+			//Glog.prnt(serverName + " serverListener received inputLine=" + receivedText);
 			if (receivedText != null) {
 				if ("PONG".equals(receivedText)) {
 					float latency = (System.nanoTime() - lastPingSentTns);
 					latency = latency / 1000000;
 					if (latency > 1) {
-						Gh.prnt("PONG now=" + gh.gRound(latency, 5) + "ms");
+						Glog.prnt("PONG now=" + gh.gRound(latency, 5) + "ms");
 					}
-					//Gh.prnt("received PONG = " + gh.gRound(latency, 5) + "ms");
+					//Glog.prnt("received PONG = " + gh.gRound(latency, 5) + "ms");
 				} else {
 					if (srvListener != null) {
 						if (srvId == 1) {
@@ -223,27 +224,27 @@ public class Serverg3 implements Runnable {
 						} else if (srvId == 5) {
 							srvListener.incomingMessage5(receivedText);
 						} else {
-							
+
 						}
-						
+
 					} else {
-						Gh.prnte(serverPort + " serverListener srvListener=null");
+						Glog.prnte(serverPort + " serverListener srvListener=null");
 						break;
 					}
 				}
 			} else {
-				Gh.prnte(serverPort + " serverListener receivedText=null breaking out of while listener");
+				Glog.prnte(serverPort + " serverListener receivedText=null breaking out of while listener");
 				break;
 			}
 		}
-		
-		Gh.prnt(serverPort + " serverListener Ending all process");
+
+		Glog.prnt(serverPort + " serverListener Ending all process");
 		reconnecter("server listener");
 	}
-	
+
 	private void closeAll() {
-//		Gh.prnt("closeAll start");
-		
+//		Glog.prnt("closeAll start");
+
 		if (outputStreamWriter != null) {
 			try {
 				outputStreamWriter.close();
@@ -251,9 +252,9 @@ public class Serverg3 implements Runnable {
 				e.printStackTrace();
 			}
 		} else {
-			Gh.prnt(serverPort + " closeAll outputStreamWriter == null nothing to close");
+			Glog.prnt(serverPort + " closeAll outputStreamWriter == null nothing to close");
 		}
-		
+
 		if (bufferedOutputStream != null) {
 			try {
 				bufferedOutputStream.close();
@@ -261,32 +262,32 @@ public class Serverg3 implements Runnable {
 				e.printStackTrace();
 			}
 		} else {
-			Gh.prnt(serverPort + " closeAll bufferedOutputStream == null nothing to close");
+			Glog.prnt(serverPort + " closeAll bufferedOutputStream == null nothing to close");
 		}
-		
+
 		if (serverSocket != null) {
 			try {
 				serverSocket.close();
-				//Gh.prnt(serverName + " closeAll serverSocket close successful");
+				//Glog.prnt(serverName + " closeAll serverSocket close successful");
 			} catch (IOException e) {
-				Gh.prnte(serverPort + " closeAll serverSocket close failed, e=" + e.getMessage());
+				Glog.prnte(serverPort + " closeAll serverSocket close failed, e=" + e.getMessage());
 			}
 		} else {
-			//Gh.prnt(serverName + " closeAll serverSocket == null nothing to close");
+			//Glog.prnt(serverName + " closeAll serverSocket == null nothing to close");
 		}
-		
+
 		if (socket != null) {
 			try {
 				socket.close();
-				//Gh.prnt(serverName + " closeAll clientSocket close succesfull");
+				//Glog.prnt(serverName + " closeAll clientSocket close succesfull");
 			} catch (IOException e) {
-				Gh.prnte(serverPort + " closeAll clientSocket close failed, e=" + e.getMessage());
+				Glog.prnte(serverPort + " closeAll clientSocket close failed, e=" + e.getMessage());
 			}
 		} else {
-			//Gh.prnt(serverPort + " closeAll clientSocket == null nothing to close");
+			//Glog.prnt(serverPort + " closeAll clientSocket == null nothing to close");
 		}
-		
-//		Gh.prnt("closeAll end");
+
+//		Glog.prnt("closeAll end");
 	}
-	
+
 }
