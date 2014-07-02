@@ -46,10 +46,6 @@ public class Gh {
 		return ft5.format(System.currentTimeMillis());
 	}
 
-// writers Start
-
-// writers End
-
 	public static String getJarFolder(CodeSource codeSource) {
 
 		File jarFile = null;
