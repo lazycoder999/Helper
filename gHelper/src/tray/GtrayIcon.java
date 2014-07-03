@@ -1,4 +1,4 @@
-package tray.icon;
+package tray;
 
 import helper.Gh;
 import helper.Glog;

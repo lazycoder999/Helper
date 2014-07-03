@@ -29,6 +29,7 @@ public class Glog {
 				whileRunning = false;
 			}
 		});
+
 	}
 
 	public synchronized static void runPrintLogToConsole() {

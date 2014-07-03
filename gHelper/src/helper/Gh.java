@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import java.security.CodeSource;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Random;
 import java.util.Set;
 
 public class Gh {
@@ -329,5 +330,12 @@ public class Gh {
 
 //		return res2.substring(index3 + 1);
 
+	}
+
+	public String getUniq() {
+		Random random = new Random();
+		int randomNumber = random.nextInt(90000 - 10000) + 10000;
+		return String.valueOf(randomNumber) + String.valueOf(System.currentTimeMillis());
+		//return String.valueOf((int) (Math.random() * (900000 - 100000)) + 100000) + String.valueOf(System.currentTimeMillis());
 	}
 }
