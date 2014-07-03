@@ -1,7 +1,7 @@
 package g.tcp;
 
 import g.tcp.client.Clientg3;
-import helper.pack.Glog;
+import helper.Glog;
 
 public class Tclient {
 

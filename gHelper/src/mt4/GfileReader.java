@@ -1,6 +1,6 @@
 package mt4;
 
-import helper.pack.Glog;
+import helper.Glog;
 
 import java.io.File;
 import java.io.FileNotFoundException;

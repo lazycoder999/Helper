@@ -2,7 +2,7 @@ package g.tcp;
 
 import g.tcp.server.ServerListener;
 import g.tcp.server.Serverg3;
-import helper.pack.Glog;
+import helper.Glog;
 
 public class Tserver implements ServerListener {
 

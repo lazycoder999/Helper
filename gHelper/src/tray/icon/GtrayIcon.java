@@ -1,7 +1,7 @@
 package tray.icon;
 
-import helper.pack.Gh;
-import helper.pack.Glog;
+import helper.Gh;
+import helper.Glog;
 
 import java.awt.AWTException;
 import java.awt.Image;

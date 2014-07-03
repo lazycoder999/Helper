@@ -1,7 +1,7 @@
 package g.tcp.server;
 
-import helper.pack.Gh;
-import helper.pack.Glog;
+import helper.Gh;
+import helper.Glog;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;

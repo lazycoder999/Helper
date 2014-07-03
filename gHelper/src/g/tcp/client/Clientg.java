@@ -1,6 +1,6 @@
 package g.tcp.client;
 
-import helper.pack.Glog;
+import helper.Glog;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;

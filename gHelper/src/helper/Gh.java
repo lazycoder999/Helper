@@ -1,4 +1,4 @@
-package helper.pack;
+package helper;
 
 import java.awt.Window;
 import java.io.File;
