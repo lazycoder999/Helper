@@ -46,11 +46,11 @@ public class Mysql {
 	
 	public void connectDb() {
 		
-		String url = "jdbc:mysql://localhost:3306/";
-		String dbName = "sakila";
+		String url = "jdbc:mysql://78.84.107.167:3366/";
+		String dbName = "skudra";
 		String driver = "com.mysql.jdbc.Driver";
-		String userName = "user1";
-		String password = "test123";
+		String userName = "gunars1";
+		String password = "tests1";
 		
 		try {
 			Class.forName(driver).newInstance();
