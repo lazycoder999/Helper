@@ -13,10 +13,10 @@ public class Glog {
 	
 	private static boolean	whileRunning	= true;
 	
-	public static String[]	logArray		= new String[1000];
-	public static long[]	logArrayTime	= new long[1000];
-	private static String[]	logArrayTmp		= new String[1000];
-	public static long[]	logArrayTimeTmp	= new long[1000];
+	public static String[]	logArray		= new String[10000];
+	public static long[]	logArrayTime	= new long[10000];
+	private static String[]	logArrayTmp		= new String[10000];
+	public static long[]	logArrayTimeTmp	= new long[10000];
 	private static short	logArrayI		= 0, logArrayIprinted = 0;
 	public static int		logArrayItmp	= 0;
 	public static String	globalVar1		= "";
@@ -65,7 +65,7 @@ public class Glog {
 	private synchronized static void printLogToConsole() {
 		for (short i = logArrayIprinted; i < logArrayI; i++) {
 			
-			if (logArray[i] != null && logArray[i] != "" && !logArray[i].contains("[speed]") && !logArray[i].contains("[debug]")
+			if (logArray[i] != null && logArray[i] != "" /*&& !logArray[i].contains("[speed]")*/&& !logArray[i].contains("[debug]")
 					&& !logArray[i].contains("[prices]") && !logArray[i].contains("[tickstat]")) {
 				
 				//String text = logArray[i].replace("[prices]", "").replace("[ok]", "");
@@ -145,7 +145,7 @@ public class Glog {
 			e.printStackTrace();
 		}
 		
-		if (logArrayI > 800 || text.contains("[write]")) {
+		if (logArrayI > 9500 || text.contains("[write]")) {
 			logArrayItmp = logArrayI;
 			logArrayI = 0;
 			
@@ -178,7 +178,7 @@ public class Glog {
 			e.printStackTrace();
 		}
 		
-		if (logArrayI > 800 || text.contains("[write]")) {
+		if (logArrayI > 9500 || text.contains("[write]")) {
 			logArrayItmp = logArrayI;
 			logArrayI = 0;
 			

@@ -228,7 +228,23 @@ public class Serverg3 implements Runnable {
 							srvListener.incomingMessage4(receivedText);
 						} else if (srvId == 5) {
 							srvListener.incomingMessage5(receivedText);
-						} else {
+						} else if (srvId == 6) {
+							srvListener.incomingMessage6(receivedText);
+						} else if (srvId == 7) {
+							srvListener.incomingMessage7(receivedText);
+						} else if (srvId == 8) {
+							srvListener.incomingMessage8(receivedText);
+						} else if (srvId == 9) {
+							srvListener.incomingMessage9(receivedText);
+						} else if (srvId == 10) {
+							srvListener.incomingMessage10(receivedText);
+						} else if (srvId == 11) {
+							srvListener.incomingMessage11(receivedText);
+						} else if (srvId == 12) {
+							srvListener.incomingMessage12(receivedText);
+						}
+						
+						else {
 							
 						}
 						

@@ -16,4 +16,14 @@ public interface ServerListener {
 	
 	public void incomingMessage7(String line);
 	
+	public void incomingMessage8(String line);
+	
+	public void incomingMessage9(String line);
+	
+	public void incomingMessage10(String line);
+	
+	public void incomingMessage11(String line);
+	
+	public void incomingMessage12(String line);
+	
 }

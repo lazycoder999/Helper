@@ -103,25 +103,58 @@ public class Mysql {
 		}
 		
 		return msg;
-	}*/	
+	}*/
 	
 	public void updateTradeField(String tradeId, String fieldName, String fieldValue) {
-		try {
-			st.executeUpdate("UPDATE skudra.trades SET " + fieldName + "='" + fieldValue + "', lastTableUpdate=NOW() WHERE tradeId = " + tradeId
-					+ ";");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		Thread startInThread = new Thread(new Runnable() {
+			public void run() {
+				
+				try {
+					st.executeUpdate("UPDATE skudra.trades SET " + fieldName + "='" + fieldValue + "', lastTableUpdate=NOW() WHERE tradeId = "
+							+ tradeId + ";");
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				
+			}
+		});
+		startInThread.setPriority(Thread.MIN_PRIORITY);
+		startInThread.start();
 	}
 	
-	public void inertNewTrade(String tradeId) {
-		Glog.prnt("nbr = " + tradeId);
-		try {
-			//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
-			st.execute("INSERT INTO skudra.trades(tradeId, dateTime) VALUES ( " + tradeId + ", NOW())");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	public void insertNewTrade(String tradeId) {
+		Thread startInThread = new Thread(new Runnable() {
+			public void run() {
+				Glog.prnt("nbr = " + tradeId);
+				try {
+					//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
+					st.execute("INSERT INTO skudra.trades(tradeId, dateTime) VALUES ( " + tradeId + ", NOW())");
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				
+			}
+		});
+		startInThread.setPriority(Thread.MIN_PRIORITY);
+		startInThread.start();
 	}
 	
+	public void insertNewPerformance(String whoWasIt, double miliseconds) {
+		Thread startInThread = new Thread(new Runnable() {
+			public void run() {
+				try {
+					//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
+					String statement = "INSERT INTO skudra.performance(lastTableUpdate, whoWasIt, miliseconds) VALUES (NOW(), '" + whoWasIt + "',"
+							+ miliseconds + ")";
+					//Glog.prnt(statement);
+					st.execute(statement);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				
+			}
+		});
+		startInThread.setPriority(Thread.MIN_PRIORITY);
+		startInThread.start();
+	}
 }
