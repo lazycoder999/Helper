@@ -103,15 +103,19 @@ public class Mysql {
 		}
 		
 		return msg;
-	}*/
+	}*/	
 	
-	public void updateTradeField(String tradeId, String fieldName, String fieldValue) {
+	public void updateTradeField(long tradeId, String fieldName, String fieldValue) {
 		Thread startInThread = new Thread(new Runnable() {
 			public void run() {
 				
 				try {
-					st.executeUpdate("UPDATE skudra.trades SET " + fieldName + "='" + fieldValue + "', lastTableUpdate=NOW() WHERE tradeId = "
-							+ tradeId + ";");
+					String statement = "UPDATE skudra.trades SET " + fieldName + "='" + fieldValue + "', lastTableUpdate=NOW() WHERE tradeId = "
+							+ tradeId + ";";
+					int result = st.executeUpdate(statement);
+					if (result == 0) {
+						Glog.prnt(result + " " + statement);
+					}
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -122,21 +126,20 @@ public class Mysql {
 		startInThread.start();
 	}
 	
-	public void insertNewTrade(String tradeId) {
-		Thread startInThread = new Thread(new Runnable() {
-			public void run() {
-				Glog.prnt("nbr = " + tradeId);
-				try {
-					//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
-					st.execute("INSERT INTO skudra.trades(tradeId, dateTime) VALUES ( " + tradeId + ", NOW())");
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				
+	public void insertNewTrade(long tradeId) {
+		
+		Glog.prnt("nbr = " + tradeId);
+		try {
+			//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
+			String statement = "INSERT INTO skudra.trades(tradeId, dateTime) VALUES (" + tradeId + ", NOW())";
+			int result = st.executeUpdate(statement);
+			if (result == 0) {
+				Glog.prnt(result + " " + statement);
 			}
-		});
-		startInThread.setPriority(Thread.MIN_PRIORITY);
-		startInThread.start();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	public void insertNewPerformance(String whoWasIt, double miliseconds) {
@@ -146,8 +149,10 @@ public class Mysql {
 					//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
 					String statement = "INSERT INTO skudra.performance(lastTableUpdate, whoWasIt, miliseconds) VALUES (NOW(), '" + whoWasIt + "',"
 							+ miliseconds + ")";
-					//Glog.prnt(statement);
-					st.execute(statement);
+					int result = st.executeUpdate(statement);
+					if (result == 0) {
+						Glog.prnt(result + " " + statement);
+					}
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}

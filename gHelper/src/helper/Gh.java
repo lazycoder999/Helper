@@ -333,10 +333,11 @@ public class Gh {
 		
 	}
 	
-	public String getUniq() {
+	public long getUniq() {
 		//Random random = new Random();
 		//int randomNumber = random.nextInt(9000 - 1000) + 1000;
 		//return System.currentTimeMillis();
-		return String.valueOf((int) (Math.random() * (900000 - 100000)) + 100000) + String.valueOf(System.currentTimeMillis());
+		
+		return Long.valueOf(((long) ((Math.random() * (900000 - 100000)) + 100000)) + System.currentTimeMillis());
 	}
 }
