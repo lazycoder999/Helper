@@ -46,14 +46,14 @@ public class Gh {
 		return ft5.format(System.currentTimeMillis());
 	}
 	
-	public static String getJarFolder(CodeSource codeSource) {
+	public static String getJarFolder(final CodeSource codeSource) {
 		
 		File jarFile = null;
 		
 		try {
 			jarFile = new File(codeSource.getLocation().toURI().getPath());
 			
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			e.printStackTrace();
 		}
 		String jarDir = jarFile.getParentFile().getPath();
@@ -61,12 +61,12 @@ public class Gh {
 		return jarDir;
 	}
 	
-	public String gDecoder(String text, Byte position) {
+	public String gDecoder(final String text, final Byte position) {
 		// prnt("decoder received: " + text);
 		String[] tokens = null;
 		try {
 			tokens = text.split(";");
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			Glog.prnte("gDecoder, error, text=" + text + ", e=" + e.getMessage());
 		}
 		
@@ -78,23 +78,23 @@ public class Gh {
 		}
 	}
 	
-	public String fileDateModified(String fullFileName) {
-		File file = new File(fullFileName);
+	public String fileDateModified(final String fullFileName) {
+		final File file = new File(fullFileName);
 		Glog.prnt("fileDateModified: fullFileName=" + fullFileName);
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return sdf.format(file.lastModified());
 	}
 	
 	public static String getRunningFileName() {
-		String path = Gh.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+		final String path = Gh.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 		String decodedPath = null;
 		try {
 			decodedPath = URLDecoder.decode(path, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		// System.out.println("decodedPath=" + decodedPath);
-		File f = new File(decodedPath);
+		final File f = new File(decodedPath);
 		// System.out.println(f.getName());
 		
 		return f.getName();
@@ -105,7 +105,7 @@ public class Gh {
 		
 		try {
 			userName = System.getProperty("user.name");
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -113,7 +113,7 @@ public class Gh {
 		
 		try {
 			pcName = InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
+		} catch (final UnknownHostException e) {
 			e.printStackTrace();
 		}
 		
@@ -122,78 +122,78 @@ public class Gh {
 		return pcName;
 	}
 	
-	public Integer getInteger(String text) {
+	public Integer getInteger(final String text) {
 		try {
 			return Integer.valueOf(text);
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			ex.printStackTrace();
 			return null;
 		}
 	}
 	
-	public BigDecimal getBigDecimal(String text) {
+	public BigDecimal getBigDecimal(final String text) {
 		try {
 			return new BigDecimal(text);
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			ex.printStackTrace();
 			return null;
 		}
 	}
 	
-	public Boolean getBoolean(Object object, String key) {
+	public Boolean getBoolean(final Object object, final String key) {
 		
 		Boolean booleanValue = null;
 		
 		try {
 			booleanValue = Boolean.valueOf((String) object);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			Glog.prnte("LoadSett2: getBoolean, problem setting: " + key.toString() + "=" + object.toString() + e.getMessage());
 		}
 		
 		return booleanValue;
 	}
 	
-	public String getString(Object object, String key) {
+	public String getString(final Object object, final String key) {
 		
 		String string = null;
 		
 		try {
-			string = String.valueOf((String) object);
-		} catch (Exception e) {
+			string = String.valueOf(object);
+		} catch (final Exception e) {
 			Glog.prnte("LoadSett2: getString, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
 		}
 		
 		return string;
 	}
 	
-	public Integer getInteger(Object object, String key) {
+	public Integer getInteger(final Object object, final String key) {
 		
 		Integer intNumber = null;
 		
 		try {
 			intNumber = Integer.valueOf((String) object);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			Glog.prnte("LoadSett2: getInteger, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
 		}
 		
 		return intNumber;
 	}
 	
-	public Float getFloat(Object object, String key) {
+	public Float getFloat(final Object object, final String key) {
 		
 		Float floatNumber = null;
 		
 		try {
 			floatNumber = Float.valueOf((String) object);
 			
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			Glog.prnte("LoadSett2: getFloat, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
 		}
 		
 		return floatNumber;
 	}
 	
-	public static void runSystemCommand(String command) {
+	public static void runSystemCommand(final String command) {
 		
 		try {
 			Runtime.getRuntime().exec(command);
@@ -205,20 +205,20 @@ public class Gh {
 //				prnt("[ping]" + s);
 //			}
 			
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public Window getSelectedWindow(Window[] windows) {
+	public Window getSelectedWindow(final Window[] windows) {
 		
 		Window result = null;
 		for (int i = 0; i < windows.length; i++) {
-			Window window = windows[i];
+			final Window window = windows[i];
 			if (window.isActive()) {
 				result = window;
 			} else {
-				Window[] ownedWindows = window.getOwnedWindows();
+				final Window[] ownedWindows = window.getOwnedWindows();
 				if (ownedWindows != null) {
 					result = getSelectedWindow(ownedWindows);
 				}
@@ -227,51 +227,53 @@ public class Gh {
 		return result;
 	}
 	
-	public double roundDouble(double value, int places) {
-		if (places < 0)
+	public double roundDouble(final double value, final int places) {
+		if (places < 0) {
 			throw new IllegalArgumentException();
+		}
 		
 		BigDecimal bd = new BigDecimal(value);
 		bd = bd.setScale(places, RoundingMode.HALF_UP);
 		return bd.doubleValue();
 	}
 	
-	public String gRound(Double notRoundedNbr, Integer digits) {
+	public String gRound(final Double notRoundedNbr, final Integer digits) {
 		if (notRoundedNbr != null) {
-			String roundedNbr = new BigDecimal(notRoundedNbr).setScale(digits, RoundingMode.HALF_UP).toString();
+			final String roundedNbr = new BigDecimal(notRoundedNbr).setScale(digits, RoundingMode.HALF_UP).toString();
 			return roundedNbr;
 		} else {
 			return null;
 		}
 	}
 	
-	public String gRound(Float notRoundedNbr, Integer digits) {
+	public String gRound(final Float notRoundedNbr, final Integer digits) {
 		if (notRoundedNbr != null) {
-			String roundedNbr = new BigDecimal(notRoundedNbr).setScale(digits, RoundingMode.HALF_UP).toString();
+			final String roundedNbr = new BigDecimal(notRoundedNbr).setScale(digits, RoundingMode.HALF_UP).toString();
 			return roundedNbr;
 		} else {
 			return null;
 		}
 	}
 	
-	public String gRound(BigDecimal notRoundedNbr, Integer digits) {
+	public String gRound(final BigDecimal notRoundedNbr, final Integer digits) {
 		if (notRoundedNbr != null) {
-			String roundedNbr = notRoundedNbr.setScale(digits, RoundingMode.HALF_UP).toString();
+			final String roundedNbr = notRoundedNbr.setScale(digits, RoundingMode.HALF_UP).toString();
 			return roundedNbr;
 		} else {
 			return null;
 		}
 	}
 	
-	public static Thread getThreadByName(String threadName) {
+	public static Thread getThreadByName(final String threadName) {
 		Thread __tmp = null;
 		
-		Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-		Thread[] threadArray = threadSet.toArray(new Thread[threadSet.size()]);
+		final Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+		final Thread[] threadArray = threadSet.toArray(new Thread[threadSet.size()]);
 		
 		for (int i = 0; i < threadArray.length; i++) {
-			if (threadArray[i].getName().equals(threadName))
+			if (threadArray[i].getName().equals(threadName)) {
 				__tmp = threadArray[i];
+			}
 		}
 		
 		return __tmp;
@@ -279,16 +281,16 @@ public class Gh {
 	
 	private static final int	POW10[]	= { 1, 10, 100, 1000, 10000, 100000, 1000000 };
 	
-	public String g2Round(double val, int precision) {
-		StringBuilder sb = new StringBuilder();
+	public String g2Round(double val, final int precision) {
+		final StringBuilder sb = new StringBuilder();
 		if (val < 0) {
 			sb.append('-');
 			val = -val;
 		}
-		int exp = POW10[precision];
-		long lval = (long) (val * exp + 0.5);
+		final int exp = POW10[precision];
+		final long lval = (long) (val * exp + 0.5);
 		sb.append(lval / exp).append('.');
-		long fval = lval % exp;
+		final long fval = lval % exp;
 		for (int p = precision - 1; p > 0 && fval < POW10[p]; p--) {
 			sb.append('0');
 		}
@@ -296,7 +298,7 @@ public class Gh {
 		return sb.toString();
 	}
 	
-	public String decodeFast(String fieldName, String text) {
+	public String decodeFast(final String fieldName, final String text) {
 		int index1 = 0, index2, index3;
 		String res1, res2, res3;
 		//Glog.prnt("decodeFast. fieldName=" + fieldName + ", text=" + text);
