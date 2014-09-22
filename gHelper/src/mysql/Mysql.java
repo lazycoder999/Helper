@@ -15,12 +15,13 @@ public class Mysql {
 	//private ResultSet	resultSet	= null;
 	
 	public void launchDbConnection() {
-		Thread connectionChecker = new Thread(new Runnable() {
+		final Thread connectionChecker = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				while (true) {
 					try {
 						Thread.sleep(1000);
-					} catch (InterruptedException e) {
+					} catch (final InterruptedException e) {
 						e.printStackTrace();
 					}
 					
@@ -36,7 +37,7 @@ public class Mysql {
 								conn.close();
 								((Mysql) conn).connectDb();
 							}
-						} catch (SQLException e) {
+						} catch (final SQLException e) {
 							e.printStackTrace();
 						}
 					} else {
@@ -52,25 +53,25 @@ public class Mysql {
 	
 	private void connectDb() {
 		Glog.prnt("Start connectDb");
-		String url = "jdbc:mysql://78.84.107.167:3366/";
-		String dbName = "skudra";
-		String driver = "com.mysql.jdbc.Driver";
-		String userName = "gunars1";
-		String password = "tests1";
+		final String url = "jdbc:mysql://78.84.107.167:3366/";
+		final String dbName = "skudra";
+		final String driver = "com.mysql.jdbc.Driver";
+		final String userName = "gunars1";
+		final String password = "tests1";
 		//mysql-connector-java-5.1.31-bin.jar
 		try {
 			Class.forName(driver).newInstance();
-		} catch (InstantiationException e) {
+		} catch (final InstantiationException e) {
 			e.printStackTrace();
-		} catch (IllegalAccessException e) {
+		} catch (final IllegalAccessException e) {
 			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		
 		try {
 			conn = DriverManager.getConnection(url + dbName, userName, password);
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
 			e.printStackTrace();
 		}
 		
@@ -78,7 +79,8 @@ public class Mysql {
 		
 		try {
 			st = conn.createStatement();
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
+			Glog.prnte("connectDb");
 			e.printStackTrace();
 		}
 		Glog.prnt("End connectDb");
@@ -90,9 +92,9 @@ public class Mysql {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		String msg = null;
-		
+
 		try {
 			while (resultSet.next()) {
 				//int id = resultSet.getInt("actor_id");
@@ -101,22 +103,24 @@ public class Mysql {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		return msg;
 	}*/	
 	
-	public void updateTradeField(long tradeId, String fieldName, String fieldValue) {
-		Thread startInThread = new Thread(new Runnable() {
+	public void updateTradeField(final long tradeId, final String fieldName, final String fieldValue) {
+		final Thread startInThread = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				
 				try {
-					String statement = "UPDATE skudra.trades SET " + fieldName + "='" + fieldValue + "', lastTableUpdate=NOW() WHERE tradeId = "
-							+ tradeId + ";";
-					int result = st.executeUpdate(statement);
+					final String statement = "UPDATE skudra.trades SET " + fieldName + "='" + fieldValue
+							+ "', lastTableUpdate=NOW() WHERE tradeId = " + tradeId + ";";
+					final int result = st.executeUpdate(statement);
 					if (result == 0) {
 						Glog.prnt(result + " " + statement);
 					}
-				} catch (SQLException e) {
+				} catch (final SQLException e) {
+					Glog.prnte("updateTradeField");
 					e.printStackTrace();
 				}
 				
@@ -126,34 +130,37 @@ public class Mysql {
 		startInThread.start();
 	}
 	
-	public void insertNewTrade(long tradeId) {
+	public void insertNewTrade(final long tradeId) {
 		
 		Glog.prnt("nbr = " + tradeId);
 		try {
 			//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
-			String statement = "INSERT INTO skudra.trades(tradeId, dateTime) VALUES (" + tradeId + ", NOW())";
-			int result = st.executeUpdate(statement);
+			final String statement = "INSERT INTO skudra.trades(tradeId, dateTime) VALUES (" + tradeId + ", NOW())";
+			final int result = st.executeUpdate(statement);
 			if (result == 0) {
 				Glog.prnt(result + " " + statement);
 			}
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
+			Glog.prnte("insertNewTrade");
 			e.printStackTrace();
 		}
 		
 	}
 	
-	public void insertNewPerformance(String whoWasIt, double miliseconds) {
-		Thread startInThread = new Thread(new Runnable() {
+	public void insertNewPerformance(final String whoWasIt, final double miliseconds) {
+		final Thread startInThread = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
-					String statement = "INSERT INTO skudra.performance(lastTableUpdate, whoWasIt, miliseconds) VALUES (NOW(), '" + whoWasIt + "',"
-							+ miliseconds + ")";
-					int result = st.executeUpdate(statement);
+					final String statement = "INSERT INTO skudra.performance(lastTableUpdate, whoWasIt, miliseconds) VALUES (NOW(), '" + whoWasIt
+							+ "'," + miliseconds + ")";
+					final int result = st.executeUpdate(statement);
 					if (result == 0) {
 						Glog.prnt(result + " " + statement);
 					}
-				} catch (SQLException e) {
+				} catch (final SQLException e) {
+					Glog.prnte("insertNewPerformance");
 					e.printStackTrace();
 				}
 				

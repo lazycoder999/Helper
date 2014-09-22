@@ -21,21 +21,21 @@ public class Serverg3 implements Runnable {
 	private BufferedReader			bufferedReader			= null;
 	
 	public Integer					serverPort				= 0;
-	private int						connectionTimeout		= 30000;
+	private final int				connectionTimeout		= 30000;
 	
-	private int						sendPingEachTms			= 5000;
+	private final int				sendPingEachTms			= 5000;
 	private long					lastPingSentTns			= 0;
 	
-// unique	
+// unique
 	
 	private ServerSocket			serverSocket			= null;
-	private Gh						gh						= new Gh();
+	private final Gh				gh						= new Gh();
 	public byte						srvId					= 0;
 	private ServerListener			srvListener;
 	
 // unique
 	
-	public void setServerListener(ServerListener srvListener) {
+	public void setServerListener(final ServerListener srvListener) {
 		this.srvListener = srvListener;
 	}
 	
@@ -45,6 +45,7 @@ public class Serverg3 implements Runnable {
 		Glog.runPrintLogToConsole();
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
 			public void run() {
 				closeAll();
 			}
@@ -52,19 +53,20 @@ public class Serverg3 implements Runnable {
 		
 		reconnecter("start server");
 		
-		Thread sendPingThr = new Thread(new Runnable() {
+		final Thread sendPingThr = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				while (true) {
 					try {
 						Thread.sleep(sendPingEachTms);
-					} catch (InterruptedException e) {
+					} catch (final InterruptedException e) {
 						Glog.prnte(serverPort + " sendPing thread sleep error, e=" + e.getMessage());
 					}
 					
 					try {
 						lastPingSentTns = System.nanoTime();
 						sendMsg("PING");
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						Glog.prnte(serverPort + " sendMsg(PING) error, e=" + e.getMessage());
 					}
 				}
@@ -81,7 +83,7 @@ public class Serverg3 implements Runnable {
 			serverSocket = new ServerSocket(serverPort);
 			serverSocket.setSoTimeout(connectionTimeout);
 			serverSocket.setPerformancePreferences(2, 0, 1);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Glog.prnte(serverPort + " createServerSocketConnection new serverSocket failed on port=" + serverPort);
 			serverSocket = null;
 			return false;
@@ -95,7 +97,7 @@ public class Serverg3 implements Runnable {
 				socket.setSoTimeout(connectionTimeout);
 				socket.setPerformancePreferences(2, 0, 1);
 				Glog.prnt(serverPort + " createSocketConnection clientSocket succesful");
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				Glog.prnte(serverPort + " createSocketConnection clientSocket failed, e=" + e.getMessage());
 				socket = null;
 				return false;
@@ -108,7 +110,7 @@ public class Serverg3 implements Runnable {
 		if (socket != null) {
 			try {
 				bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			} catch (IOException e1) {
+			} catch (final IOException e1) {
 				e1.printStackTrace();
 				bufferedReader = null;
 				Glog.prnte(serverPort + " createReader BufferedReader, e: " + e1.getMessage());
@@ -118,7 +120,7 @@ public class Serverg3 implements Runnable {
 			try {
 				bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
 				// Glog.prnt("Client createWriter bufferedOutputStream succesfull");
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				Glog.prnte("Client createWriter bufferedOutputStream failed, e=" + e.getMessage());
 				bufferedOutputStream = null;
 				return false;
@@ -133,7 +135,7 @@ public class Serverg3 implements Runnable {
 				outputStreamWriter = new OutputStreamWriter(bufferedOutputStream, "US-ASCII");
 				// Glog.prnt("Client createWriter bufferedOutputStream succesfull");
 				return true;
-			} catch (UnsupportedEncodingException e) {
+			} catch (final UnsupportedEncodingException e) {
 				Glog.prnte("Client createWriter bufferedOutputStream failed, e=" + e.getMessage());
 				outputStreamWriter = null;
 				return false;
@@ -149,7 +151,7 @@ public class Serverg3 implements Runnable {
 				text = text + '\n';
 				outputStreamWriter.write(text, 0, text.length());
 				outputStreamWriter.flush();
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				Glog.prnte(serverPort + " sendMsg error = " + e.getMessage());
 			}
 		} else {
@@ -157,8 +159,9 @@ public class Serverg3 implements Runnable {
 		}
 	}
 	
-	private void reconnecter(String calletId) {
-		Thread startThr = new Thread(new Runnable() {
+	private void reconnecter(final String calletId) {
+		final Thread startThr = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				Glog.prnt(serverPort + " reconnecter called callerId=" + calletId);
 				closeAll();
@@ -167,12 +170,13 @@ public class Serverg3 implements Runnable {
 					closeAll();
 					try {
 						Thread.sleep(1000);
-					} catch (InterruptedException e) {
+					} catch (final InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
 				
-				Thread serverListenerThr = new Thread(new Runnable() {
+				final Thread serverListenerThr = new Thread(new Runnable() {
+					@Override
 					public void run() {
 						serverListener();
 					}
@@ -197,7 +201,7 @@ public class Serverg3 implements Runnable {
 				receivedText = "";
 				try {
 					receivedText = bufferedReader.readLine();
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					Glog.prnte(serverPort + " br.readLine exception=" + e.getMessage());
 					receivedText = "";
 					break;
@@ -242,6 +246,42 @@ public class Serverg3 implements Runnable {
 							srvListener.incomingMessage11(receivedText);
 						} else if (srvId == 12) {
 							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 13) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 14) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 15) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 16) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 17) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 18) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 19) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 20) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 21) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 22) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 23) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 24) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 25) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 26) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 27) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 28) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 29) {
+							srvListener.incomingMessage12(receivedText);
+						} else if (srvId == 30) {
+							srvListener.incomingMessage12(receivedText);
 						}
 						
 						else {
@@ -269,7 +309,7 @@ public class Serverg3 implements Runnable {
 		if (outputStreamWriter != null) {
 			try {
 				outputStreamWriter.close();
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				e.printStackTrace();
 			}
 		} else {
@@ -279,7 +319,7 @@ public class Serverg3 implements Runnable {
 		if (bufferedOutputStream != null) {
 			try {
 				bufferedOutputStream.close();
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				e.printStackTrace();
 			}
 		} else {
@@ -290,7 +330,7 @@ public class Serverg3 implements Runnable {
 			try {
 				serverSocket.close();
 				//Glog.prnt(serverName + " closeAll serverSocket close successful");
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				Glog.prnte(serverPort + " closeAll serverSocket close failed, e=" + e.getMessage());
 			}
 		} else {
@@ -301,7 +341,7 @@ public class Serverg3 implements Runnable {
 			try {
 				socket.close();
 				//Glog.prnt(serverName + " closeAll clientSocket close succesfull");
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				Glog.prnte(serverPort + " closeAll clientSocket close failed, e=" + e.getMessage());
 			}
 		} else {
