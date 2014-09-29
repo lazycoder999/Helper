@@ -160,7 +160,7 @@ public class Serverg3 implements Runnable {
 	}
 	
 	private void reconnecter(final String calletId) {
-		final Thread startThr = new Thread(new Runnable() {
+		final Thread serverReconnecterThr = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				Glog.prnt(serverPort + " reconnecter called callerId=" + calletId);
@@ -182,13 +182,13 @@ public class Serverg3 implements Runnable {
 					}
 				});
 				serverListenerThr.setPriority(Thread.MAX_PRIORITY);
-				serverListenerThr.setName("startThr");
+				serverListenerThr.setName("serverListenerThr");
 				serverListenerThr.start();
 			}
 		});
-		startThr.setPriority(Thread.MAX_PRIORITY);
-		startThr.setName("startThr");
-		startThr.start();
+		serverReconnecterThr.setPriority(Thread.MAX_PRIORITY);
+		serverReconnecterThr.setName("serverReconnecterThr");
+		serverReconnecterThr.start();
 	}
 	
 	private void serverListener() {
