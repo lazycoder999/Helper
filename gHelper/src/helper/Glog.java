@@ -8,20 +8,22 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.LocalDateTime;
 
 public class Glog {
 	
-	private static boolean	whileRunning	= true;
+	private static boolean			whileRunning	= true;
 	
-	public static String[]	logArray		= new String[10000];
-	public static long[]	logArrayTime	= new long[10000];
-	private static String[]	logArrayTmp		= new String[10000];
-	public static long[]	logArrayTimeTmp	= new long[10000];
-	private static short	logArrayI		= 0, logArrayIprinted = 0;
-	public static int		logArrayItmp	= 0;
-	public static String	globalVar1		= "";
-	public static String	globalVar2		= "";
-	private static Gh		gh				= new Gh();
+	public static String[]			logArray		= new String[10000];
+	public static LocalDateTime[]	logArrayTime	= new LocalDateTime[10000];
+	public static LocalDateTime[]	logArrayTimeTmp	= new LocalDateTime[10000];
+	private static String[]			logArrayTmp		= new String[10000];
+	private static short			logArrayI		= 0, logArrayIprinted = 0;
+	public static int				logArrayItmp	= 0;
+	
+	public static String			globalVar1		= "";
+	public static String			globalVar2		= "";
+	private static Gh				gh				= new Gh();
 	
 	public Glog() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -34,16 +36,16 @@ public class Glog {
 	}
 	
 	public synchronized static void runPrintLogToConsole() {
-		if (Gh.getThreadByName("printLogToConsoleThread") == null) {
+		if (gh.getThreadByName("printLogToConsoleThread") == null) {
 			prnt("Ghelper: runGhelper Start");
-			Thread printLogToConsoleThread = new Thread(new Runnable() {
+			final Thread printLogToConsoleThread = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					while (whileRunning) {
 						printLogToConsole();
 						try {
 							Thread.sleep(5);
-						} catch (InterruptedException e) {
+						} catch (final InterruptedException e) {
 							e.printStackTrace();
 						}
 					}
@@ -53,8 +55,8 @@ public class Glog {
 			printLogToConsoleThread.setName("printLogToConsoleThread");
 			printLogToConsoleThread.start();
 			
-			DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
-			DecimalFormatSymbols custom = new DecimalFormatSymbols();
+			final DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
+			final DecimalFormatSymbols custom = new DecimalFormatSymbols();
 			custom.setDecimalSeparator('.');
 			format.setDecimalFormatSymbols(custom);
 			
@@ -65,15 +67,14 @@ public class Glog {
 	private synchronized static void printLogToConsole() {
 		for (short i = logArrayIprinted; i < logArrayI; i++) {
 			
-			if (logArray[i] != null && logArray[i] != "" /*&& !logArray[i].contains("[speed]")*/&& !logArray[i].contains("[debug]")
+			if (logArray[i] != null /*&& logArray[i] != "" && !logArray[i].contains("[speed]")*/&& !logArray[i].contains("[debug]")
 					&& !logArray[i].contains("[prices]") && !logArray[i].contains("[tickstat]")) {
 				
 				//String text = logArray[i].replace("[prices]", "").replace("[ok]", "");
 				String text = logArray[i];
 				//text = text.substring(11);
 				//text = text.replace(";", " ");
-				text = Gh.ft1.format(logArrayTime[i]) + text;
-				
+				text = gh.gTime("H:mm:ss.SSS", logArrayTime[i]) + text;
 				if (logArray[i].contains("[err]")) {
 					System.err.println(text);
 				} else {
@@ -84,7 +85,7 @@ public class Glog {
 		logArrayIprinted = logArrayI;
 	}
 	
-	public synchronized static void writeLine(String text, String folderName, String fileName) {
+	public synchronized static void writeLine(String text, final String folderName, final String fileName) {
 		// System.out.println("writing Start");
 		// System.out.println("text=" + text);
 		// System.out.println("folderName=" + folderName);
@@ -95,15 +96,15 @@ public class Glog {
 		
 		try {
 			// System.out.println("fullFileName=" + fullFileName);
-			String fullFileName = folderName + fileName;
-			File file = new File(fullFileName);
+			final String fullFileName = folderName + fileName;
+			final File file = new File(fullFileName);
 			// System.out.println("fullFileName=" + fullFileName);
 			
 			try {
 				if (!file.exists()) {
 					file.getParentFile().mkdirs();
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				System.err.println("error chekcing directories" + e.getMessage());
 			}
 			
@@ -111,37 +112,40 @@ public class Glog {
 				if (!file.exists()) {
 					file.createNewFile();
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				System.err.println("error chekcing file" + e.getMessage());
 			}
 			
 			Writer w = null;
 			try {
 				@SuppressWarnings("resource")
-				FileOutputStream is = new FileOutputStream(file, true);
-				OutputStreamWriter osw = new OutputStreamWriter(is, "UTF-8");
+				final FileOutputStream is = new FileOutputStream(file, true);
+				final OutputStreamWriter osw = new OutputStreamWriter(is, "UTF-8");
 				w = new BufferedWriter(osw);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				System.err.println("filing stuff error" + e.getMessage());
 			}
 			
 			text = text.replaceAll(",", ".");
-			
-			w.write(text + '\n');
-			w.close();
-		} catch (IOException e) {
+			if (w != null) {
+				w.write(text + '\n');
+				w.close();
+			} else {
+				System.err.println("w = null");
+			}
+		} catch (final IOException e) {
 			System.err.println("Problem writing to the file" + e.getMessage());
 		}
 		// prnt("writing End");
 	}
 	
-	public synchronized static void prnt(String text) {
+	public synchronized static void prnt(final String text) {
 		
 		try {
-			logArrayTime[logArrayI] = System.currentTimeMillis();
+			logArrayTime[logArrayI] = LocalDateTime.now();
 			logArray[logArrayI] = ";[ok] " + text;
 			logArrayI++;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -153,10 +157,10 @@ public class Glog {
 			logArrayTimeTmp = logArrayTime.clone();
 			for (int i = 0; i < logArray.length; i++) {
 				logArray[i] = null;
-				logArrayTime[i] = 0;
+				logArrayTime[i] = null;
 			}
 			
-			Thread writeAllThread = new Thread(new Runnable() {
+			final Thread writeAllThread = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					writeAll();
@@ -168,13 +172,13 @@ public class Glog {
 		}
 	}
 	
-	public synchronized static void prnte(String text) {
+	public synchronized static void prnte(final String text) {
 		
 		try {
-			logArrayTime[logArrayI] = System.currentTimeMillis();
+			logArrayTime[logArrayI] = LocalDateTime.now();
 			logArray[logArrayI] = ";[err] " + text;
 			logArrayI++;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -186,10 +190,10 @@ public class Glog {
 			logArrayTimeTmp = logArrayTime.clone();
 			for (int i = 0; i < logArray.length; i++) {
 				logArray[i] = null;
-				logArrayTime[i] = 0;
+				logArrayTime[i] = null;
 			}
 			
-			Thread writeAllThread = new Thread(new Runnable() {
+			final Thread writeAllThread = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					writeAll();
@@ -204,97 +208,97 @@ public class Glog {
 	private synchronized static void writeAll() {
 		System.out.println("writeAll Start");
 		try {
-			String fs = File.separator;
+			final String fs = File.separator;
 			
 			globalVar1 = globalVar1.replaceAll(globalVar2, "");
 			globalVar1 = globalVar1.replaceAll("M1", "").replaceAll("M5", "").replaceAll("M15", "").replaceAll("M30", "");
 			globalVar1 = globalVar1.replaceAll("H1", "").replaceAll("H4", "").replaceAll("D1", "").replaceAll("W1", "").replaceAll("MN", "");
 			
-			String folderName = "C:" + fs + "log_skudra" + fs + Gh.getPcAndUserName() + fs + globalVar1.replaceAll("[^a-zA-Z0-9.-]", "") + "_";
+			final String folderName = "C:" + fs + "log_skudra" + fs + gh.getPcAndUserName() + fs + globalVar1.replaceAll("[^a-zA-Z0-9.-]", "") + "_";
 			
 			System.out.println("writeAll folderName=" + folderName);
 			for (short i = 0; i < logArrayItmp; i++) {
 				
-				logArrayTmp[i] = Gh.ft2.format(logArrayTimeTmp[i]) + logArrayTmp[i];
+				logArrayTmp[i] = gh.gTime("yyyy-MM-dd H:mm:ss.SSS", logArrayTimeTmp[i]) + logArrayTmp[i];
 				if (logArrayTmp[i].contains("[prices]")) {
 					try {
 						String textTmp = logArrayTmp[i].replace("[ok] ", "");
 						textTmp = textTmp.replace("[prices]", "");
 						textTmp = textTmp.replace("[err] ", "");
-						writeLine(textTmp, folderName, Gh.td2() + "_" + Gh.getRunningFileName() + "_[prices].txt");
-					} catch (Exception e) {
+						writeLine(textTmp, folderName, gh.gTime("yyyy-MM", LocalDateTime.now()) + "_" + gh.getRunningFileName() + "_[prices].txt");
+					} catch (final Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
 				} else if (logArrayTmp[i].contains("[err]")) {
 					try {
-						writeLine(logArrayTmp[i], folderName, Gh.getRunningFileName() + "_[err].txt");
-					} catch (Exception e) {
+						writeLine(logArrayTmp[i], folderName, gh.getRunningFileName() + "_[err].txt");
+					} catch (final Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
 				} else if (logArrayTmp[i].contains("[speed]")) {
 					try {
-						writeLine(logArrayTmp[i], folderName, Gh.getRunningFileName() + "_[speed].txt");
-					} catch (Exception e) {
+						writeLine(logArrayTmp[i], folderName, gh.getRunningFileName() + "_[speed].txt");
+					} catch (final Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
 				} else if (logArrayTmp[i].contains("[op]")) {
 					try {
-						writeLine(logArrayTmp[i], folderName, Gh.getRunningFileName() + "_[operations].txt");
-					} catch (Exception e) {
+						writeLine(logArrayTmp[i], folderName, gh.getRunningFileName() + "_[operations].txt");
+					} catch (final Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
 				} else if (logArrayTmp[i].contains("[tickstat]")) {
 					try {
-						writeLine(logArrayTmp[i], folderName, Gh.getRunningFileName() + "_[tickstat].txt");
-					} catch (Exception e) {
+						writeLine(logArrayTmp[i], folderName, gh.getRunningFileName() + "_[tickstat].txt");
+					} catch (final Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
 				} else if (logArrayTmp[i].contains("[tradeStat]")) {
 					try {
-						writeLine(logArrayTmp[i], folderName, Gh.getRunningFileName() + "_[tradeStat].txt");
-					} catch (Exception e) {
+						writeLine(logArrayTmp[i], folderName, gh.getRunningFileName() + "_[tradeStat].txt");
+					} catch (final Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
 				} else if (logArrayTmp[i].contains(";signal;")) {
 					try {
-						writeLine(logArrayTmp[i], folderName, Gh.getRunningFileName() + "_[sigFills].txt");
-					} catch (Exception e) {
+						writeLine(logArrayTmp[i], folderName, gh.getRunningFileName() + "_[sigFills].txt");
+					} catch (final Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
 				} else if (logArrayTmp[i].contains("[filename]")) {
 					try {
-						writeLine(logArrayTmp[i], folderName, Gh.getRunningFileName() + "_" + gh.gDecoder(logArrayTmp[i], (byte) 0) + ".txt");
-					} catch (Exception e) {
+						writeLine(logArrayTmp[i], folderName, gh.getRunningFileName() + "_" + gh.gDecoder(logArrayTmp[i], (byte) 0) + ".txt");
+					} catch (final Exception e) {
 						System.err.println("writeAll writeLine 2, e=" + e.getMessage());
 					}
 					
 				}
 				
 				try {
-					writeLine(logArrayTmp[i], folderName, Gh.td() + "_" + Gh.getRunningFileName() + "_[all].txt");
-				} catch (Exception e) {
+					writeLine(logArrayTmp[i], folderName, gh.gTime("yyyy-MM-dd", LocalDateTime.now()) + "_" + gh.getRunningFileName() + "_[all].txt");
+				} catch (final Exception e) {
 					System.err.println("writeAll writeLine 1, e=" + e.getMessage());
 				}
 				
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			prnte("writeAll whole method, e=" + e.getMessage());
 		}
 		System.out.println("writeAll End");
 	}
 	
-	public synchronized void directWriter(String text) {
+	public synchronized void directWriter(final String text) {
 		try {
 			
-			String fs = File.separator;
-			String folderName = "C:" + fs + "log_skudra" + fs + Gh.getPcAndUserName() + fs;
-			File file = new File(folderName + Gh.td() + Gh.getRunningFileName() + "_[exceptions].log");
+			final String fs = File.separator;
+			final String folderName = "C:" + fs + "log_skudra" + fs + gh.getPcAndUserName() + fs;
+			final File file = new File(folderName + gh.gTime("yyyy-MM-dd", LocalDateTime.now()) + gh.getRunningFileName() + "_[exceptions].log");
 			
 			try {
 				if (!file.exists()) {
 					file.getParentFile().mkdirs();
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				System.err.println("error chekcing directories" + e.getMessage());
 			}
 			
@@ -302,23 +306,27 @@ public class Glog {
 				if (!file.exists()) {
 					file.createNewFile();
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				System.err.println("error chekcing file" + e.getMessage());
 			}
 			
 			Writer w = null;
 			try {
 				@SuppressWarnings("resource")
-				FileOutputStream is = new FileOutputStream(file, true);
-				OutputStreamWriter osw = new OutputStreamWriter(is, "UTF-8");
+				final FileOutputStream is = new FileOutputStream(file, true);
+				final OutputStreamWriter osw = new OutputStreamWriter(is, "UTF-8");
 				w = new BufferedWriter(osw);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				System.err.println("filing stuff error" + e.getMessage());
 			}
 			
-			w.write(Gh.ft2.format(System.currentTimeMillis()) + text + '\n');
-			w.close();
-		} catch (IOException e) {
+			if (w != null) {
+				w.write(gh.gTime("yyyy-MM-dd H:mm:ss.SSS", LocalDateTime.now()) + text + '\n');
+				w.close();
+			} else {
+				System.err.println("directWriter w = null");
+			}
+		} catch (final IOException e) {
 			System.err.println("Problem writing to the file" + e.getMessage());
 		}
 	}

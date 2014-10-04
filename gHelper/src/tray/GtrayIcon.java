@@ -15,50 +15,53 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 
 public class GtrayIcon {
-
-	public static void main(String[] args) {
-		GtrayIcon gtray = new GtrayIcon();
-		gtray.createTry("1.jpg");
-	}
-
-	public URL getImageUrl(String trayIconName) {
+	
+//	public static void main(String[] args) {
+//		GtrayIcon gtray = new GtrayIcon();
+//		gtray.createTry("1.jpg");
+//	}
+	
+	Gh	gh	= new Gh();
+	
+	public URL getImageUrl(final String trayIconName) {
 		return getClass().getResource("resources/" + trayIconName);
 	}
-
-	public void createTry(String trayIconName) {
-		Glog.prnt("filename=" + Gh.getRunningFileName());
+	
+	public void createTry(final String trayIconName) {
+		Glog.prnt("filename=" + gh.getRunningFileName());
 		TrayIcon trayIcon = null;
 		if (SystemTray.isSupported()) {
-			SystemTray tray = SystemTray.getSystemTray();
-
+			final SystemTray tray = SystemTray.getSystemTray();
+			
 			Image image = null;
-
+			
 			Glog.prnt("getClass().getResource=" + getClass().getResource("resources/" + trayIconName));
 			image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("resources/" + trayIconName));
-
-			PopupMenu popMenu = new PopupMenu();
-			MenuItem item1 = new MenuItem("Exit");
+			
+			final PopupMenu popMenu = new PopupMenu();
+			final MenuItem item1 = new MenuItem("Exit");
 			popMenu.add(item1);
-
+			
 			item1.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
+				@Override
+				public void actionPerformed(final ActionEvent e) {
 					System.exit(0);
 				}
 			});
-
-			int trayIconWidth = new TrayIcon(image).getSize().width;
+			
+			final int trayIconWidth = new TrayIcon(image).getSize().width;
 			image = image.getScaledInstance(trayIconWidth, -1, Image.SCALE_SMOOTH);
-			trayIcon = new TrayIcon(image, Gh.getRunningFileName(), popMenu);
-
+			trayIcon = new TrayIcon(image, gh.getRunningFileName(), popMenu);
+			
 			try {
 				tray.add(trayIcon);
-			} catch (AWTException e) {
+			} catch (final AWTException e) {
 				System.err.println("error when setting tay icon, e=" + e);
 			}
-
+			
 		} else {
 			Glog.prnt("tray icon not supoorted");
 		}
 	}
-
+	
 }

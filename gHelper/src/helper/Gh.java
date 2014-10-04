@@ -12,41 +12,22 @@ import java.net.UnknownHostException;
 import java.security.CodeSource;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
 public class Gh {
 	
-	public static SimpleDateFormat	ft				= new SimpleDateFormat("yyyy-MM-dd");
-	public static SimpleDateFormat	ft1				= new SimpleDateFormat("H:mm:ss.SSS");
-	public static SimpleDateFormat	ft2				= new SimpleDateFormat("yyyy-MM-dd H:mm:ss.SSS");
-	public SimpleDateFormat			ft3				= new SimpleDateFormat("H:mm:ss");
-	public SimpleDateFormat			ft4				= new SimpleDateFormat("yyyy-MM-dd H:mm:ss");
-	private static SimpleDateFormat	ft5				= new SimpleDateFormat("yyyy-MM");
-	public DecimalFormat			df2				= new DecimalFormat("#.##");
+	public DecimalFormat	df2				= new DecimalFormat("#.##");
+	public boolean			shuttingDown	= false;
 	
-	public boolean					shuttingDown	= false;
-	
-	public Gh() {
-		
+	public String gTime(final String dateTimeFormat, final LocalDateTime localDateTime) {
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateTimeFormat);
+		final String f = formatter.format(localDateTime);
+		return f;
 	}
 	
-	public String t() {
-		return ft1.format(System.currentTimeMillis());
-	}
-	
-	public String tt() {
-		return ft3.format(System.currentTimeMillis());
-	}
-	
-	public static String td() {
-		return ft.format(System.currentTimeMillis());
-	}
-	
-	public static String td2() {
-		return ft5.format(System.currentTimeMillis());
-	}
-	
-	public static String getJarFolder(final CodeSource codeSource) {
+	public String getJarFolder(final CodeSource codeSource) {
 		
 		File jarFile = null;
 		
@@ -56,9 +37,14 @@ public class Gh {
 		} catch (final URISyntaxException e) {
 			e.printStackTrace();
 		}
-		String jarDir = jarFile.getParentFile().getPath();
-		jarDir = jarDir.replace("\\", "/");
-		return jarDir;
+		if (jarFile != null) {
+			String jarDir = jarFile.getParentFile().getPath();
+			jarDir = jarDir.replace("\\", "/");
+			return jarDir;
+		} else {
+			Glog.prnt("getJarFolder = null");
+			return null;
+		}
 	}
 	
 	public String gDecoder(final String text, final Byte position) {
@@ -85,7 +71,7 @@ public class Gh {
 		return sdf.format(file.lastModified());
 	}
 	
-	public static String getRunningFileName() {
+	public String getRunningFileName() {
 		final String path = Gh.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 		String decodedPath = null;
 		try {
@@ -94,13 +80,24 @@ public class Gh {
 			e.printStackTrace();
 		}
 		// System.out.println("decodedPath=" + decodedPath);
-		final File f = new File(decodedPath);
-		// System.out.println(f.getName());
 		
-		return f.getName();
+		File f = null;
+		
+		if (decodedPath != null) {
+			f = new File(decodedPath);
+		} else {
+			Glog.prnte("getRunningFileName decodedPath = null");
+		}
+		
+		if (f != null) {
+			return f.getName();
+		} else {
+			Glog.prnt("getRunningFileName file = null");
+			return null;
+		}
 	}
 	
-	public static String getPcAndUserName() {
+	public String getPcAndUserName() {
 		String userName = "error cannot get user name";
 		
 		try {
@@ -193,7 +190,7 @@ public class Gh {
 		return floatNumber;
 	}
 	
-	public static void runSystemCommand(final String command) {
+	public void runSystemCommand(final String command) {
 		
 		try {
 			Runtime.getRuntime().exec(command);
@@ -264,7 +261,7 @@ public class Gh {
 		}
 	}
 	
-	public static Thread getThreadByName(final String threadName) {
+	public Thread getThreadByName(final String threadName) {
 		Thread __tmp = null;
 		
 		final Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
