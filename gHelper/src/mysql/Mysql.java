@@ -155,6 +155,7 @@ public class Mysql {
 					//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
 					final String statement = "INSERT INTO skudra.performance(lastTableUpdate, whoWasIt, miliseconds) VALUES (NOW(), '" + whoWasIt
 							+ "'," + miliseconds + ")";
+					Glog.prnt(statement);
 					final int result = st.executeUpdate(statement);
 					if (result == 0) {
 						Glog.prnt(result + " " + statement);
@@ -167,6 +168,7 @@ public class Mysql {
 			}
 		});
 		startInThread.setPriority(Thread.MIN_PRIORITY);
+		startInThread.setName("insertNewPerformance-thr");
 		startInThread.start();
 	}
 }
