@@ -1,16 +1,17 @@
 package mysql;
 
-import helper.Glog;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.Logger;
+
 public class Mysql {
 	
-	private Connection	conn	= null;
-	private Statement	st		= null;
+	private Connection			conn	= null;
+	private Statement			st		= null;
+	private static final Logger	log		= Logger.getLogger(Mysql.class.getName());
 	
 	//private ResultSet	resultSet	= null;
 	
@@ -27,13 +28,13 @@ public class Mysql {
 					
 					if (conn != null) {
 //						try {
-//							Glog.prnt("1 conn.isClosed()=" + conn.isClosed());
+//							log.info("1 conn.isClosed()=" + conn.isClosed());
 //						} catch (SQLException e) {
 //							e.printStackTrace();
 //						}
 						try {
 							if (conn.isClosed()) {
-								Glog.prnt("conn.isClosed() == true");
+								log.info("conn.isClosed() == true");
 								conn.close();
 								((Mysql) conn).connectDb();
 							}
@@ -41,7 +42,7 @@ public class Mysql {
 							e.printStackTrace();
 						}
 					} else {
-						Glog.prnte("conn == null");
+						log.error("conn == null");
 						connectDb();
 					}
 				}
@@ -52,7 +53,7 @@ public class Mysql {
 	}
 	
 	private void connectDb() {
-		Glog.prnt("Start connectDb");
+		log.info("Start connectDb");
 		final String url = "jdbc:mysql://78.84.107.167:3366/";
 		final String dbName = "skudra";
 		final String driver = "com.mysql.jdbc.Driver";
@@ -75,15 +76,15 @@ public class Mysql {
 			e.printStackTrace();
 		}
 		
-		Glog.prnt(conn.toString());
+		log.info(conn.toString());
 		
 		try {
 			st = conn.createStatement();
 		} catch (final SQLException e) {
-			Glog.prnte("connectDb");
+			log.error("connectDb");
 			e.printStackTrace();
 		}
-		Glog.prnt("End connectDb");
+		log.info("End connectDb");
 	}
 	
 /*	public String requestActorName(Integer actorId) {
@@ -117,10 +118,10 @@ public class Mysql {
 							+ "', lastTableUpdate=NOW() WHERE tradeId = " + tradeId + ";";
 					final int result = st.executeUpdate(statement);
 					if (result == 0) {
-						Glog.prnt(result + " " + statement);
+						log.info(result + " " + statement);
 					}
 				} catch (final SQLException e) {
-					Glog.prnte("updateTradeField");
+					log.error("updateTradeField");
 					e.printStackTrace();
 				}
 				
@@ -132,16 +133,16 @@ public class Mysql {
 	
 	public void insertNewTrade(final long tradeId) {
 		
-		Glog.prnt("nbr = " + tradeId);
+		log.info("nbr = " + tradeId);
 		try {
 			//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
 			final String statement = "INSERT INTO skudra.trades(tradeId, dateTime) VALUES (" + tradeId + ", NOW())";
 			final int result = st.executeUpdate(statement);
 			if (result == 0) {
-				Glog.prnt(result + " " + statement);
+				log.info(result + " " + statement);
 			}
 		} catch (final SQLException e) {
-			Glog.prnte("insertNewTrade");
+			log.error("insertNewTrade");
 			e.printStackTrace();
 		}
 		
@@ -155,13 +156,18 @@ public class Mysql {
 					//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
 					final String statement = "INSERT INTO skudra.performance(lastTableUpdate, whoWasIt, miliseconds) VALUES (NOW(), '" + whoWasIt
 							+ "'," + miliseconds + ")";
-					Glog.prnt(statement);
-					final int result = st.executeUpdate(statement);
-					if (result == 0) {
-						Glog.prnt(result + " " + statement);
+					log.info(statement);
+					if (st != null) {
+						final int result = st.executeUpdate(statement);
+						if (result == 0) {
+							log.info(result + " " + statement);
+						}
+					} else {
+						log.error("st = null");
 					}
+					
 				} catch (final SQLException e) {
-					Glog.prnte("insertNewPerformance");
+					log.error("insertNewPerformance");
 					e.printStackTrace();
 				}
 				

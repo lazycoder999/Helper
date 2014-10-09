@@ -1,7 +1,6 @@
 package g.tcp.server;
 
 import helper.Gh;
-import helper.Glog;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -11,6 +10,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import org.apache.log4j.Logger;
 
 public class Serverg3 implements Runnable {
 	
@@ -33,6 +34,8 @@ public class Serverg3 implements Runnable {
 	public byte						srvId					= 0;
 	private ServerListener			srvListener;
 	
+	private static final Logger		log						= Logger.getLogger(Serverg3.class.getName());
+	
 // unique
 	
 	public void setServerListener(final ServerListener srvListener) {
@@ -42,7 +45,6 @@ public class Serverg3 implements Runnable {
 // common
 	@Override
 	public void run() {
-		Glog.runPrintLogToConsole();
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -60,14 +62,14 @@ public class Serverg3 implements Runnable {
 					try {
 						Thread.sleep(sendPingEachTms);
 					} catch (final InterruptedException e) {
-						Glog.prnte("Serverg3:" + srvPort + " sendPing thread sleep error, e=" + e.getMessage());
+						log.error("Serverg3:" + srvPort + " sendPing thread sleep error, e=" + e.getMessage());
 					}
 					
 					try {
 						lastPingSentTns = System.nanoTime();
 						sendMsg("PING");
 					} catch (final Exception e) {
-						Glog.prnte("Serverg3:" + srvPort + " sendMsg(PING) error, e=" + e.getMessage());
+						log.error("Serverg3:" + srvPort + " sendMsg(PING) error, e=" + e.getMessage());
 					}
 				}
 			}
@@ -84,26 +86,26 @@ public class Serverg3 implements Runnable {
 			serverSocket.setSoTimeout(connectionTimeout);
 			serverSocket.setPerformancePreferences(2, 0, 1);
 		} catch (final IOException e) {
-			Glog.prnte("Serverg3:" + srvPort + " createServerSocketConnection new serverSocket failed on port=" + srvPort);
+			log.error("Serverg3:" + srvPort + " createServerSocketConnection new serverSocket failed on port=" + srvPort);
 			serverSocket = null;
 			return false;
 		}
 		
 		if (serverSocket != null) {
 			try {
-				Glog.prnt("Serverg3:" + srvPort + " createSocketConnection clientSocket = serverSocket.accept() waiting on incomming connection...");
+				log.info("Serverg3:" + srvPort + " createSocketConnection clientSocket = serverSocket.accept() waiting on incomming connection...");
 				socket = serverSocket.accept();
 				socket.setTcpNoDelay(true);
 				socket.setSoTimeout(connectionTimeout);
 				socket.setPerformancePreferences(2, 0, 1);
-				Glog.prnt("Serverg3:" + srvPort + " createSocketConnection clientSocket succesful");
+				log.info("Serverg3:" + srvPort + " createSocketConnection clientSocket succesful");
 			} catch (final IOException e) {
-				Glog.prnte("Serverg3:" + srvPort + " createSocketConnection clientSocket failed, e=" + e.getMessage());
+				log.error("Serverg3:" + srvPort + " createSocketConnection clientSocket failed, e=" + e.getMessage());
 				socket = null;
 				return false;
 			}
 		} else {
-			Glog.prnte("Serverg3:" + srvPort + " createSocketConnection serverSocket == null");
+			log.error("Serverg3:" + srvPort + " createSocketConnection serverSocket == null");
 			return false;
 		}
 		
@@ -113,30 +115,30 @@ public class Serverg3 implements Runnable {
 			} catch (final IOException e1) {
 				e1.printStackTrace();
 				bufferedReader = null;
-				Glog.prnte("Serverg3:" + srvPort + " createReader BufferedReader, e: " + e1.getMessage());
+				log.error("Serverg3:" + srvPort + " createReader BufferedReader, e: " + e1.getMessage());
 				return false;
 			}
 			
 			try {
 				bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
-				// Glog.prnt("Client createWriter bufferedOutputStream succesfull");
+				// log.info("Client createWriter bufferedOutputStream succesfull");
 			} catch (final IOException e) {
-				Glog.prnte("Serverg3: createWriter bufferedOutputStream failed, e=" + e.getMessage());
+				log.error("Serverg3: createWriter bufferedOutputStream failed, e=" + e.getMessage());
 				bufferedOutputStream = null;
 				return false;
 			}
 		} else {
-			Glog.prnte("Serverg3:" + srvPort + " createReader clientSocket == null");
+			log.error("Serverg3:" + srvPort + " createReader clientSocket == null");
 			return false;
 		}
 		
 		if (bufferedOutputStream != null) {
 			try {
 				outputStreamWriter = new OutputStreamWriter(bufferedOutputStream, "US-ASCII");
-				// Glog.prnt("Client createWriter bufferedOutputStream succesfull");
+				// log.info("Client createWriter bufferedOutputStream succesfull");
 				return true;
 			} catch (final UnsupportedEncodingException e) {
-				Glog.prnte("Serverg3: createWriter bufferedOutputStream failed, e=" + e.getMessage());
+				log.error("Serverg3: createWriter bufferedOutputStream failed, e=" + e.getMessage());
 				outputStreamWriter = null;
 				return false;
 			}
@@ -152,10 +154,10 @@ public class Serverg3 implements Runnable {
 				outputStreamWriter.write(text, 0, text.length());
 				outputStreamWriter.flush();
 			} catch (final IOException e) {
-				Glog.prnte("Serverg3:" + srvPort + " sendMsg error = " + e.getMessage());
+				log.error("Serverg3:" + srvPort + " sendMsg error = " + e.getMessage());
 			}
 		} else {
-			Glog.prnte("Serverg3:" + srvPort + " sendMsg outputStreamWriter=" + outputStreamWriter);
+			log.error("Serverg3:" + srvPort + " sendMsg outputStreamWriter=" + outputStreamWriter);
 		}
 	}
 	
@@ -163,7 +165,7 @@ public class Serverg3 implements Runnable {
 		final Thread serverReconnecterThr = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				Glog.prnt("Serverg3:" + srvPort + " reconnecter called callerId=" + calletId);
+				log.info("Serverg3:" + srvPort + " reconnecter called callerId=" + calletId);
 				closeAll();
 				
 				while (!createConnection()) {
@@ -192,9 +194,9 @@ public class Serverg3 implements Runnable {
 	}
 	
 	private void serverListener() {
-//		Glog.prnt(serverName + " serverListener Start");
+//		log.info(serverName + " serverListener Start");
 		
-		Glog.prnt("Serverg3:" + srvPort + " serverListener start listening (before while)");
+		log.info("Serverg3:" + srvPort + " serverListener start listening (before while)");
 		String receivedText = "";
 		while (true) {
 			if (bufferedReader != null) {
@@ -202,7 +204,7 @@ public class Serverg3 implements Runnable {
 				try {
 					receivedText = bufferedReader.readLine();
 				} catch (final Exception e) {
-					Glog.prnte("Serverg3:" + srvPort + " br.readLine exception=" + e.getMessage());
+					log.error("Serverg3:" + srvPort + " br.readLine exception=" + e.getMessage());
 					receivedText = "";
 					break;
 				}
@@ -211,15 +213,15 @@ public class Serverg3 implements Runnable {
 				receivedText = null;
 				break;
 			}
-			//Glog.prnt(serverName + " serverListener received inputLine=" + receivedText);
+			//log.info(serverName + " serverListener received inputLine=" + receivedText);
 			if (receivedText != null) {
 				if ("PONG".equals(receivedText)) {
 					float latency = (System.nanoTime() - lastPingSentTns);
 					latency = latency / 1000000;
 					if (latency > 1) {
-						Glog.prnt("Serverg3: PONG now=" + gh.gRound(latency, 5) + "ms");
+						log.info("Serverg3: PONG now=" + gh.gRound(latency, 5) + "ms");
 					}
-					//Glog.prnt("received PONG = " + gh.gRound(latency, 5) + "ms");
+					//log.info("received PONG = " + gh.gRound(latency, 5) + "ms");
 				} else {
 					if (srvListener != null) {
 						if (srvId == 1) {
@@ -289,22 +291,22 @@ public class Serverg3 implements Runnable {
 						}
 						
 					} else {
-						Glog.prnte("Serverg3:" + srvPort + " serverListener srvListener=null");
+						log.error("Serverg3:" + srvPort + " serverListener srvListener=null");
 						break;
 					}
 				}
 			} else {
-				Glog.prnte("Serverg3:" + srvPort + " serverListener receivedText=null breaking out of while listener");
+				log.error("Serverg3:" + srvPort + " serverListener receivedText=null breaking out of while listener");
 				break;
 			}
 		}
 		
-		Glog.prnt("Serverg3:" + srvPort + " serverListener Ending all process");
+		log.info("Serverg3:" + srvPort + " serverListener Ending all process");
 		reconnecter("server listener");
 	}
 	
 	private void closeAll() {
-//		Glog.prnt("closeAll start");
+//		log.info("closeAll start");
 		
 		if (outputStreamWriter != null) {
 			try {
@@ -313,7 +315,7 @@ public class Serverg3 implements Runnable {
 				e.printStackTrace();
 			}
 		} else {
-			Glog.prnt("Serverg3:" + srvPort + " closeAll outputStreamWriter == null nothing to close");
+			log.info("Serverg3:" + srvPort + " closeAll outputStreamWriter == null nothing to close");
 		}
 		
 		if (bufferedOutputStream != null) {
@@ -323,32 +325,32 @@ public class Serverg3 implements Runnable {
 				e.printStackTrace();
 			}
 		} else {
-			Glog.prnt("Serverg3:" + srvPort + " closeAll bufferedOutputStream == null nothing to close");
+			log.info("Serverg3:" + srvPort + " closeAll bufferedOutputStream == null nothing to close");
 		}
 		
 		if (serverSocket != null) {
 			try {
 				serverSocket.close();
-				//Glog.prnt(serverName + " closeAll serverSocket close successful");
+				//log.info(serverName + " closeAll serverSocket close successful");
 			} catch (final IOException e) {
-				Glog.prnte("Serverg3:" + srvPort + " closeAll serverSocket close failed, e=" + e.getMessage());
+				log.error("Serverg3:" + srvPort + " closeAll serverSocket close failed, e=" + e.getMessage());
 			}
 		} else {
-			//Glog.prnt(serverName + " closeAll serverSocket == null nothing to close");
+			//log.info(serverName + " closeAll serverSocket == null nothing to close");
 		}
 		
 		if (socket != null) {
 			try {
 				socket.close();
-				//Glog.prnt(serverName + " closeAll clientSocket close succesfull");
+				//log.info(serverName + " closeAll clientSocket close succesfull");
 			} catch (final IOException e) {
-				Glog.prnte("Serverg3:" + srvPort + " closeAll clientSocket close failed, e=" + e.getMessage());
+				log.error("Serverg3:" + srvPort + " closeAll clientSocket close failed, e=" + e.getMessage());
 			}
 		} else {
-			//Glog.prnt(serverPort + " closeAll clientSocket == null nothing to close");
+			//log.info(serverPort + " closeAll clientSocket == null nothing to close");
 		}
 		
-//		Glog.prnt("closeAll end");
+//		log.info("closeAll end");
 	}
 	
 }

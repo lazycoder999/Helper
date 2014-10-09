@@ -1,7 +1,6 @@
 package tray;
 
 import helper.Gh;
-import helper.Glog;
 
 import java.awt.AWTException;
 import java.awt.Image;
@@ -14,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 
+import org.apache.log4j.Logger;
+
 public class GtrayIcon {
 	
 //	public static void main(String[] args) {
@@ -21,21 +22,23 @@ public class GtrayIcon {
 //		gtray.createTry("1.jpg");
 //	}
 	
-	Gh	gh	= new Gh();
+	Gh							gh	= new Gh();
+	
+	private static final Logger	log	= Logger.getLogger(GtrayIcon.class.getName());
 	
 	public URL getImageUrl(final String trayIconName) {
 		return getClass().getResource("resources/" + trayIconName);
 	}
 	
 	public void createTry(final String trayIconName) {
-		Glog.prnt("filename=" + gh.getRunningFileName());
+		log.info("filename=" + gh.getRunningFileName());
 		TrayIcon trayIcon = null;
 		if (SystemTray.isSupported()) {
 			final SystemTray tray = SystemTray.getSystemTray();
 			
 			Image image = null;
 			
-			Glog.prnt("getClass().getResource=" + getClass().getResource("resources/" + trayIconName));
+			log.info("getClass().getResource=" + getClass().getResource("resources/" + trayIconName));
 			image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("resources/" + trayIconName));
 			
 			final PopupMenu popMenu = new PopupMenu();
@@ -60,7 +63,7 @@ public class GtrayIcon {
 			}
 			
 		} else {
-			Glog.prnt("tray icon not supoorted");
+			log.info("tray icon not supoorted");
 		}
 	}
 	

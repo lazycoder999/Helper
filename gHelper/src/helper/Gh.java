@@ -2,6 +2,8 @@ package helper;
 
 import java.awt.Window;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,12 +16,17 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 public class Gh {
 	
-	public DecimalFormat	df2				= new DecimalFormat("#.##");
-	public boolean			shuttingDown	= false;
+	public DecimalFormat		df2				= new DecimalFormat("#.##");
+	public boolean				shuttingDown	= false;
+	private static final Logger	log				= Logger.getLogger(Gh.class.getName());
 	
 	public String gTime(final String dateTimeFormat, final LocalDateTime localDateTime) {
 		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateTimeFormat);
@@ -42,7 +49,7 @@ public class Gh {
 			jarDir = jarDir.replace("\\", "/");
 			return jarDir;
 		} else {
-			Glog.prnt("getJarFolder = null");
+			log.info("getJarFolder = null");
 			return null;
 		}
 	}
@@ -53,7 +60,7 @@ public class Gh {
 		try {
 			tokens = text.split(";");
 		} catch (final Exception e) {
-			Glog.prnte("gDecoder, error, text=" + text + ", e=" + e.getMessage());
+			log.error("gDecoder, error, text=" + text + ", e=" + e.getMessage());
 		}
 		
 		if (tokens != null) {
@@ -66,7 +73,7 @@ public class Gh {
 	
 	public String fileDateModified(final String fullFileName) {
 		final File file = new File(fullFileName);
-		Glog.prnt("fileDateModified: fullFileName=" + fullFileName);
+		log.info("fileDateModified: fullFileName=" + fullFileName);
 		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return sdf.format(file.lastModified());
 	}
@@ -86,13 +93,13 @@ public class Gh {
 		if (decodedPath != null) {
 			f = new File(decodedPath);
 		} else {
-			Glog.prnte("getRunningFileName decodedPath = null");
+			log.error("getRunningFileName decodedPath = null");
 		}
 		
 		if (f != null) {
 			return f.getName();
 		} else {
-			Glog.prnt("getRunningFileName file = null");
+			log.info("getRunningFileName file = null");
 			return null;
 		}
 	}
@@ -144,7 +151,7 @@ public class Gh {
 		try {
 			booleanValue = Boolean.valueOf((String) object);
 		} catch (final Exception e) {
-			Glog.prnte("LoadSett2: getBoolean, problem setting: " + key.toString() + "=" + object.toString() + e.getMessage());
+			log.error("LoadSett2: getBoolean, problem setting: " + key.toString() + "=" + object.toString() + e.getMessage());
 		}
 		
 		return booleanValue;
@@ -157,7 +164,7 @@ public class Gh {
 		try {
 			string = String.valueOf(object);
 		} catch (final Exception e) {
-			Glog.prnte("LoadSett2: getString, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
+			log.error("LoadSett2: getString, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
 		}
 		
 		return string;
@@ -170,7 +177,7 @@ public class Gh {
 		try {
 			intNumber = Integer.valueOf((String) object);
 		} catch (final Exception e) {
-			Glog.prnte("LoadSett2: getInteger, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
+			log.error("LoadSett2: getInteger, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
 		}
 		
 		return intNumber;
@@ -184,7 +191,7 @@ public class Gh {
 			floatNumber = Float.valueOf((String) object);
 			
 		} catch (final Exception e) {
-			Glog.prnte("LoadSett2: getFloat, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
+			log.error("LoadSett2: getFloat, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
 		}
 		
 		return floatNumber;
@@ -298,7 +305,7 @@ public class Gh {
 	public String decodeFast(final String fieldName, final String text) {
 		int index1 = 0, index2, index3;
 		String res1, res2, res3;
-		//Glog.prnt("decodeFast. fieldName=" + fieldName + ", text=" + text);
+		//log.info("decodeFast. fieldName=" + fieldName + ", text=" + text);
 //		int count = ;
 //		int count2 = ;
 //		if ((text.length() - text.replace("=", "").length()) != (text.length() - text.replace(";", "").length())) {
@@ -307,23 +314,19 @@ public class Gh {
 //		}
 		//System.out.println("count=" + count + " count2=" + count2);
 		index1 = text.indexOf(fieldName);
-		//Glog.prnt("decodeFast. = index1=" + index1);
+		//log.info("decodeFast. = index1=" + index1);
 		if (index1 != -1) {
 			res1 = text.substring(index1);
 			index2 = res1.indexOf(";");
 			res2 = res1.substring(0, index2);
 			index3 = res2.indexOf("=");
 			res3 = res2.substring(index3 + 1);
-			//Glog.prnt("decodeFast. return=" + res3);
+			//log.info("decodeFast. return=" + res3);
 			return res3;
 		} else {
-			Glog.prnte("index1=" + index1 + ", fieldName=" + fieldName + " not found in text=" + text);
+			log.error("index1=" + index1 + ", fieldName=" + fieldName + " not found in text=" + text);
 			return "[error]";
 		}
-		
-//		System.out.println("res1= " + res1);
-//		System.out.println("res2= " + res2);
-//		System.out.println("res3= " + res3);
 		
 //		String res2 = text.substring(text.indexOf(fieldName)).substring(0, text.indexOf(";"));
 //		int index3 = res2.indexOf("=");
@@ -338,5 +341,30 @@ public class Gh {
 		//return System.currentTimeMillis();
 		
 		return Long.valueOf(((long) ((Math.random() * (900000 - 100000)) + 100000)) + System.currentTimeMillis());
+	}
+	
+	public void specifyLogFile(final Class className) {
+		//Load the Existing Properties
+		final Properties log4jprops = new Properties();
+		final InputStream is = className.getClass().getResourceAsStream("/log4j.properties");
+		try {
+			log4jprops.load(is);
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+		final String path = "C:/log_skudra/";
+		final String fileName = className.getName() + ".log";
+		
+		log4jprops.setProperty("log4j.appender.CONSOLE.layout.ConversionPattern", "%-24d{yyyy-MM-dd HH:mm:ss.SSS} %m %n");
+		
+		log4jprops.setProperty("log4j.appender.FILE.File", path + gTime("yyyy-MM-hh", LocalDateTime.now()) + fileName);
+		log4jprops.setProperty("log4j.appender.FILE2.File", path + gTime("yyyy-MM-hh", LocalDateTime.now()) + "full_" + fileName);
+		
+		log4jprops.setProperty("log4j.appender.FILE.layout.ConversionPattern", "%-24d{yyyy-MM-dd HH:mm:ss.SSS} %m %n");
+		log4jprops.setProperty("log4j.appender.FILE2.layout.ConversionPattern",
+				"%-24d{yyyy-MM-dd HH:mm:ss.SSS} milis=%-20r class=%-30C meth=%-20M thr=%-40t cat=%-20c file=%-20F caller=%-50l msg=%-m %-p %n");
+		
+		//Configure Log4j
+		PropertyConfigurator.configure(log4jprops);
 	}
 }

@@ -1,14 +1,14 @@
 package mt4;
 
-import helper.Glog;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-public class GfileReader {
+import org.apache.log4j.Logger;
 
+public class GfileReader {
+	
 //	public static void main(String[] args) {
 //		//"C://Users//kepe//AppData//Roaming//MetaQuotes//Terminal//299541A8EEF200DE23B8B72470C7D8FA//MQL4//Files//pipe.txt";
 //		//"C://Users//tiod//AppData//Roaming//MetaQuotes//Terminal//CCD68BFB06049A8615C607C3F6AD69B7//MQL4//Files//pipe.txt";
@@ -17,52 +17,53 @@ public class GfileReader {
 //		String precise = "//MQL4//Files//poga.txt";
 //		nm.StartClient(location + precise, 25, (byte) 1);
 //	}
-
-	private ReaderListener readerListener;
-
-	public void setReadrListener(ReaderListener readerListener) {
+	
+	private ReaderListener		readerListener;
+	private static final Logger	log	= Logger.getLogger(GfileReader.class.getName());
+	
+	public void setReadrListener(final ReaderListener readerListener) {
 		this.readerListener = readerListener;
 	}
-
-	public void StartClient(String fileName, int refreshRate, byte listenerId, boolean sendOnChange, byte lineNumb) {
+	
+	public void StartClient(final String fileName, final int refreshRate, final byte listenerId, final boolean sendOnChange, final byte lineNumb) {
 		//Glog.runPrintLogToConsole();
-//		Glog.prnt("started file reader. fileName=" + fileName + ", refreshRate=" + refreshRate + ", listenerId=" + listenerId + ", sendOnChange="
+//		log.info("started file reader. fileName=" + fileName + ", refreshRate=" + refreshRate + ", listenerId=" + listenerId + ", sendOnChange="
 //				+ sendOnChange + ", lineNumb=" + lineNumb);
 		String prev_line = "aaa";
 		RandomAccessFile pipe = null;
 		while (true) {
-
-			File myTestFile = new File(fileName);
-			boolean fileRead = myTestFile.canRead();
-			boolean fileExists = myTestFile.exists();
-			boolean fileIs = myTestFile.isFile();
-
+			
+			final File myTestFile = new File(fileName);
+			final boolean fileRead = myTestFile.canRead();
+			final boolean fileExists = myTestFile.exists();
+			final boolean fileIs = myTestFile.isFile();
+			
 			if (fileRead && fileExists && fileIs) {
-
+				
 				pipe = null;
-
+				
 				try {
 					pipe = new RandomAccessFile(fileName, "r");
-				} catch (FileNotFoundException e) {
-					Glog.prnte("manual checks error 1");
+				} catch (final FileNotFoundException e) {
+					log.error("manual checks error 1");
 					e.printStackTrace();
-				} catch (SecurityException e) {
-					Glog.prnte("manual checks error 2");
+				} catch (final SecurityException e) {
+					log.error("manual checks error 2");
 					e.printStackTrace();
-				} catch (Exception e) {
-					Glog.prnte("manual checks error 3");
+				} catch (final Exception e) {
+					log.error("manual checks error 3");
 					e.printStackTrace();
 				}
-
+				
 				if (pipe != null) {
 					String line = null;
 					byte lineNumbCnt = 0;
 					try {
 						while (null != (line = pipe.readLine()) && pipe != null) {
 							if ((!prev_line.equals(line) || !sendOnChange) && lineNumbCnt == lineNumb) {
-								//Glog.prnt("readed line=" + line);
+								//log.info("readed line=" + line);
 								prev_line = line;
-
+								
 								if (listenerId == 1) {
 									readerListener.incomingFileMsg1(prev_line);
 								} else if (listenerId == 2) {
@@ -77,25 +78,25 @@ public class GfileReader {
 							}
 							lineNumbCnt++;
 						}
-					} catch (IOException e) {
+					} catch (final IOException e) {
 						e.printStackTrace();
 					}
 					try {
 						pipe.close();
-					} catch (IOException e1) {
+					} catch (final IOException e1) {
 						e1.printStackTrace();
 					}
 					try {
 						Thread.sleep(refreshRate);
-					} catch (InterruptedException e) {
+					} catch (final InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
 			} else {
-				Glog.prnte("fileRead=" + fileRead + " fileExists=" + fileExists + " fileIs=" + fileIs);
-				Glog.prnte("fileName=" + fileName + " listenerId=" + listenerId);
+				log.error("fileRead=" + fileRead + " fileExists=" + fileExists + " fileIs=" + fileIs);
+				log.error("fileName=" + fileName + " listenerId=" + listenerId);
 			}
 		}
-
+		
 	}
 }

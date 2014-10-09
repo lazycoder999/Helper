@@ -1,7 +1,5 @@
 package g.tcp.client;
 
-import helper.Glog;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +8,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import org.apache.log4j.Logger;
 
 public class Clientg3 implements Runnable {
 	
@@ -30,10 +30,11 @@ public class Clientg3 implements Runnable {
 	private boolean					reconnecterCalled		= false;
 	private String					name;
 	
+	private static final Logger		log						= Logger.getLogger(Clientg3.class.getName());
+	
 // common
 	@Override
 	public void run() {
-		Glog.runPrintLogToConsole();
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -53,7 +54,7 @@ public class Clientg3 implements Runnable {
 					}
 					
 					if ((System.currentTimeMillis() - lastPingReceivedTms) > receivePingTimeotTms) {
-						Glog.prnt("Clientg3:" + name + "ping not reveiced over " + receivePingTimeotTms + "ms");
+						log.info("Clientg3:" + name + "ping not reveiced over " + receivePingTimeotTms + "ms");
 						lastPingReceivedTms = System.currentTimeMillis();
 						reconnecter("ping not received");
 					}
@@ -69,17 +70,17 @@ public class Clientg3 implements Runnable {
 	
 	private boolean createConnection() {
 		name = ip + ":" + clientPort + " ";
-		//Glog.prnt(ip + ":" + port + " createSocketConnection Start");
+		//log.info(ip + ":" + port + " createSocketConnection Start");
 		
 		if (ip == null || "".equals(ip)) {
-			Glog.prnte("Clientg3: Client createSocketConnection ip not set, ip=" + ip + " clientPort=" + clientPort);
+			log.error("Clientg3: Client createSocketConnection ip not set, ip=" + ip + " clientPort=" + clientPort);
 			return false;
 		}
 		
 		final Integer zero = new Integer(0);
 		
 		if (clientPort == null || zero.equals(clientPort)) {
-			Glog.prnte("Clientg3: Client createSocketConnection port not set, ip=" + ip + " clientPort=" + clientPort);
+			log.error("Clientg3: Client createSocketConnection port not set, ip=" + ip + " clientPort=" + clientPort);
 			return false;
 		}
 		
@@ -91,11 +92,11 @@ public class Clientg3 implements Runnable {
 			socket.setTcpNoDelay(true);
 			socket.setPerformancePreferences(2, 0, 1);
 		} catch (final UnknownHostException e) {
-			Glog.prnte("Clientg3:" + name + "createSocketConnection clientSocket failed, e=" + e.getMessage());
+			log.error("Clientg3:" + name + "createSocketConnection clientSocket failed, e=" + e.getMessage());
 			socket = null;
 			return false;
 		} catch (final IOException e) {
-			Glog.prnte("Clientg3:" + name + "createSocketConnection clientSocket failed, e=" + e.getMessage());
+			log.error("Clientg3:" + name + "createSocketConnection clientSocket failed, e=" + e.getMessage());
 			socket = null;
 			return false;
 		}
@@ -107,7 +108,7 @@ public class Clientg3 implements Runnable {
 			try {
 				bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
 			} catch (final IOException e) {
-				Glog.prnte("Clientg3:" + name + "createWriter bufferedOutputStream failed, e=" + e.getMessage());
+				log.error("Clientg3:" + name + "createWriter bufferedOutputStream failed, e=" + e.getMessage());
 				bufferedOutputStream = null;
 			}
 			
@@ -116,7 +117,7 @@ public class Clientg3 implements Runnable {
 					outputStreamWriter = new OutputStreamWriter(bufferedOutputStream, "US-ASCII");
 				} catch (final UnsupportedEncodingException e) {
 					e.printStackTrace();
-					Glog.prnte("Clientg3:" + name + "createWriter bufferedOutputStream failed, e=" + e.getMessage());
+					log.error("Clientg3:" + name + "createWriter bufferedOutputStream failed, e=" + e.getMessage());
 					outputStreamWriter = null;
 					return false;
 				}
@@ -129,12 +130,12 @@ public class Clientg3 implements Runnable {
 				return true;
 			} catch (final IOException e) {
 				e.printStackTrace();
-				Glog.prnte("Clientg3:" + name + "createReader BufferedReader failed, e=" + e.getMessage());
+				log.error("Clientg3:" + name + "createReader BufferedReader failed, e=" + e.getMessage());
 				bufferedReader = null;
 				return false;
 			}
 		} else {
-			Glog.prnte("Clientg3:" + name + "socket==null");
+			log.error("Clientg3:" + name + "socket==null");
 			return false;
 		}
 		
@@ -143,20 +144,20 @@ public class Clientg3 implements Runnable {
 	public void sendMsg(String text) {
 		if (outputStreamWriter != null && text != null && !"".equals(text) && text.length() > 1) {
 			try {
-				//Glog.prnt("Client sendMsg text=" + text);
+				//log.info("Client sendMsg text=" + text);
 				text = text + '\n';
 				outputStreamWriter.write(text, 0, text.length());
 				outputStreamWriter.flush();
 			} catch (final IOException e) {
-				Glog.prnte("Clientg3:" + name + "sendMsg exception: " + e.getMessage());
+				log.error("Clientg3:" + name + "sendMsg exception: " + e.getMessage());
 			}
 		} else {
-			Glog.prnte("Clientg3:" + name + "sendMsg not sending text=" + text);
+			log.error("Clientg3:" + name + "sendMsg not sending text=" + text);
 		}
 	}
 	
 	private void reconnecter(final String caller) {
-		Glog.prnt("Clientg3:" + name + "reconnecter called=" + caller);
+		log.info("Clientg3:" + name + "reconnecter called=" + caller);
 		if (ip != null && !"".equals(ip)) {
 			if (!reconnecterCalled) {
 				reconnecterCalled = true;
@@ -172,15 +173,15 @@ public class Clientg3 implements Runnable {
 				reconnecterCalled = false;
 				serverListener();
 			} else {
-				Glog.prnte("Clientg3:" + name + "reconnecter cannot be called because reconnecterCalled=" + reconnecterCalled + "(already called)");
+				log.error("Clientg3:" + name + "reconnecter cannot be called because reconnecterCalled=" + reconnecterCalled + "(already called)");
 			}
 		} else {
-			Glog.prnte("Clientg3:" + name + "reconnecter failed to launch because ip=" + ip + " caller=" + caller);
+			log.error("Clientg3:" + name + "reconnecter failed to launch because ip=" + ip + " caller=" + caller);
 		}
 	}
 	
 	private void serverListener() {
-		Glog.prnt("Clientg3:" + name + "called serverListener");
+		log.info("Clientg3:" + name + "called serverListener");
 		String receivedText = "";
 		while (true) {
 			if (bufferedReader != null && socket != null) {
@@ -191,33 +192,33 @@ public class Clientg3 implements Runnable {
 							lastPingReceivedTms = System.currentTimeMillis();
 							sendMsg("PONG");
 						} else {
-							Glog.prnte("Clientg3:" + name + "serverListener something wrong received, receivedText=" + receivedText);
+							log.error("Clientg3:" + name + "serverListener something wrong received, receivedText=" + receivedText);
 						}
 					} else {
-						Glog.prnte("Clientg3:" + name + "receivedText=" + receivedText);
+						log.error("Clientg3:" + name + "receivedText=" + receivedText);
 						break;
 					}
 				} catch (final IOException e) {
-					Glog.prnte("Clientg3:" + name + "serverListener error on readLine, e=" + e.getMessage());
+					log.error("Clientg3:" + name + "serverListener error on readLine, e=" + e.getMessage());
 					break;
 				}
 			} else {
-				Glog.prnte("Clientg3:" + name + "serverListener bufferedReader=" + bufferedReader + " socket=" + socket);
+				log.error("Clientg3:" + name + "serverListener bufferedReader=" + bufferedReader + " socket=" + socket);
 				break;
 			}
 		}
-		Glog.prnt("Clientg3:" + name + "exiting serverListener");
+		log.info("Clientg3:" + name + "exiting serverListener");
 		reconnecter("server listener");
 	}
 	
 	public void closeAll() {
-		//Glog.prnt("Client closeConn Start");
+		//log.info("Client closeConn Start");
 		if (outputStreamWriter != null) {
 			try {
 				// osw.flush();
 				outputStreamWriter.close();
 			} catch (final IOException e1) {
-				//Glog.prnte("closeConn, e: " + e1.getMessage());
+				//log.error("closeConn, e: " + e1.getMessage());
 			}
 		} else {
 			
@@ -227,13 +228,13 @@ public class Clientg3 implements Runnable {
 			try {
 				socket.close();
 			} catch (final IOException e) {
-				//Glog.prnte("Client closeConn, e: " + e.getMessage());
+				//log.error("Client closeConn, e: " + e.getMessage());
 			}
 		} else {
 			
 		}
 		
-		//Glog.prnt("Client closeConn End");
+		//log.info("Client closeConn End");
 	}
 	
 }
