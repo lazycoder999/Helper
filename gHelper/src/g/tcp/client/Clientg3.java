@@ -24,13 +24,13 @@ public class Clientg3 implements Runnable {
 	
 	private final int				receivePingTimeotTms	= 10000;
 	private long					lastPingReceivedTms		= 0;
-	
+	public boolean					isConnected				= false;
 // unique
 	public String					ip						= "";
 	private boolean					reconnecterCalled		= false;
 	private String					name;
 	
-	private static final Logger		log						= Logger.getLogger(Clientg3.class.getName());
+	private static final Logger		LOG						= Logger.getLogger(Clientg3.class.getName());
 	
 // common
 	@Override
@@ -54,8 +54,9 @@ public class Clientg3 implements Runnable {
 					}
 					
 					if ((System.currentTimeMillis() - lastPingReceivedTms) > receivePingTimeotTms) {
-						log.info("Clientg3:" + name + "ping not reveiced over " + receivePingTimeotTms + "ms");
+						LOG.info("Clientg3:" + name + "ping not reveiced over " + receivePingTimeotTms + "ms");
 						lastPingReceivedTms = System.currentTimeMillis();
+						isConnected = false;
 						reconnecter("ping not received");
 					}
 				}
@@ -73,14 +74,14 @@ public class Clientg3 implements Runnable {
 		//log.info(ip + ":" + port + " createSocketConnection Start");
 		
 		if (ip == null || "".equals(ip)) {
-			log.error("Clientg3: Client createSocketConnection ip not set, ip=" + ip + " clientPort=" + clientPort);
+			LOG.error("Clientg3: Client createSocketConnection ip not set, ip=" + ip + " clientPort=" + clientPort);
 			return false;
 		}
 		
 		final Integer zero = new Integer(0);
 		
 		if (clientPort == null || zero.equals(clientPort)) {
-			log.error("Clientg3: Client createSocketConnection port not set, ip=" + ip + " clientPort=" + clientPort);
+			LOG.error("Clientg3: Client createSocketConnection port not set, ip=" + ip + " clientPort=" + clientPort);
 			return false;
 		}
 		
@@ -92,11 +93,11 @@ public class Clientg3 implements Runnable {
 			socket.setTcpNoDelay(true);
 			socket.setPerformancePreferences(2, 0, 1);
 		} catch (final UnknownHostException e) {
-			log.error("Clientg3:" + name + "createSocketConnection clientSocket failed, e=" + e.getMessage());
+			LOG.error("Clientg3:" + name + "createSocketConnection clientSocket failed, e=" + e.getMessage());
 			socket = null;
 			return false;
 		} catch (final IOException e) {
-			log.error("Clientg3:" + name + "createSocketConnection clientSocket failed, e=" + e.getMessage());
+			LOG.error("Clientg3:" + name + "createSocketConnection clientSocket failed, e=" + e.getMessage());
 			socket = null;
 			return false;
 		}
@@ -108,7 +109,7 @@ public class Clientg3 implements Runnable {
 			try {
 				bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
 			} catch (final IOException e) {
-				log.error("Clientg3:" + name + "createWriter bufferedOutputStream failed, e=" + e.getMessage());
+				LOG.error("Clientg3:" + name + "createWriter bufferedOutputStream failed, e=" + e.getMessage());
 				bufferedOutputStream = null;
 			}
 			
@@ -117,7 +118,7 @@ public class Clientg3 implements Runnable {
 					outputStreamWriter = new OutputStreamWriter(bufferedOutputStream, "US-ASCII");
 				} catch (final UnsupportedEncodingException e) {
 					e.printStackTrace();
-					log.error("Clientg3:" + name + "createWriter bufferedOutputStream failed, e=" + e.getMessage());
+					LOG.error("Clientg3:" + name + "createWriter bufferedOutputStream failed, e=" + e.getMessage());
 					outputStreamWriter = null;
 					return false;
 				}
@@ -130,12 +131,12 @@ public class Clientg3 implements Runnable {
 				return true;
 			} catch (final IOException e) {
 				e.printStackTrace();
-				log.error("Clientg3:" + name + "createReader BufferedReader failed, e=" + e.getMessage());
+				LOG.error("Clientg3:" + name + "createReader BufferedReader failed, e=" + e.getMessage());
 				bufferedReader = null;
 				return false;
 			}
 		} else {
-			log.error("Clientg3:" + name + "socket==null");
+			LOG.error("Clientg3:" + name + "socket==null");
 			return false;
 		}
 		
@@ -149,15 +150,15 @@ public class Clientg3 implements Runnable {
 				outputStreamWriter.write(text, 0, text.length());
 				outputStreamWriter.flush();
 			} catch (final IOException e) {
-				log.error("Clientg3:" + name + "sendMsg exception: " + e.getMessage());
+				LOG.error("Clientg3:" + name + "sendMsg exception: " + e.getMessage());
 			}
 		} else {
-			log.error("Clientg3:" + name + "sendMsg not sending text=" + text);
+			LOG.error("Clientg3:" + name + "sendMsg not sending text=" + text);
 		}
 	}
 	
 	private void reconnecter(final String caller) {
-		log.info("Clientg3:" + name + "reconnecter called=" + caller);
+		LOG.info("Clientg3:" + name + "reconnecter called=" + caller);
 		if (ip != null && !"".equals(ip)) {
 			if (!reconnecterCalled) {
 				reconnecterCalled = true;
@@ -173,15 +174,15 @@ public class Clientg3 implements Runnable {
 				reconnecterCalled = false;
 				serverListener();
 			} else {
-				log.error("Clientg3:" + name + "reconnecter cannot be called because reconnecterCalled=" + reconnecterCalled + "(already called)");
+				LOG.error("Clientg3:" + name + "reconnecter cannot be called because reconnecterCalled=" + reconnecterCalled + "(already called)");
 			}
 		} else {
-			log.error("Clientg3:" + name + "reconnecter failed to launch because ip=" + ip + " caller=" + caller);
+			LOG.error("Clientg3:" + name + "reconnecter failed to launch because ip=" + ip + " caller=" + caller);
 		}
 	}
 	
 	private void serverListener() {
-		log.info("Clientg3:" + name + "called serverListener");
+		LOG.info("Clientg3:" + name + "called serverListener");
 		String receivedText = "";
 		while (true) {
 			if (bufferedReader != null && socket != null) {
@@ -189,25 +190,26 @@ public class Clientg3 implements Runnable {
 					receivedText = bufferedReader.readLine();
 					if (receivedText != null) {
 						if ("PING".equals(receivedText)) {
+							isConnected = true;
 							lastPingReceivedTms = System.currentTimeMillis();
 							sendMsg("PONG");
 						} else {
-							log.error("Clientg3:" + name + "serverListener something wrong received, receivedText=" + receivedText);
+							LOG.error("Clientg3:" + name + "serverListener something wrong received, receivedText=" + receivedText);
 						}
 					} else {
-						log.error("Clientg3:" + name + "receivedText=" + receivedText);
+						LOG.error("Clientg3:" + name + "receivedText=" + receivedText);
 						break;
 					}
 				} catch (final IOException e) {
-					log.error("Clientg3:" + name + "serverListener error on readLine, e=" + e.getMessage());
+					LOG.error("Clientg3:" + name + "serverListener error on readLine, e=" + e.getMessage());
 					break;
 				}
 			} else {
-				log.error("Clientg3:" + name + "serverListener bufferedReader=" + bufferedReader + " socket=" + socket);
+				LOG.error("Clientg3:" + name + "serverListener bufferedReader=" + bufferedReader + " socket=" + socket);
 				break;
 			}
 		}
-		log.info("Clientg3:" + name + "exiting serverListener");
+		LOG.info("Clientg3:" + name + "exiting serverListener");
 		reconnecter("server listener");
 	}
 	

@@ -19,7 +19,7 @@ public class GfileReader {
 //	}
 	
 	private ReaderListener		readerListener;
-	private static final Logger	log	= Logger.getLogger(GfileReader.class.getName());
+	private static final Logger	LOG	= Logger.getLogger(GfileReader.class.getName());
 	
 	public void setReadrListener(final ReaderListener readerListener) {
 		this.readerListener = readerListener;
@@ -45,13 +45,13 @@ public class GfileReader {
 				try {
 					pipe = new RandomAccessFile(fileName, "r");
 				} catch (final FileNotFoundException e) {
-					log.error("manual checks error 1");
+					LOG.error("manual checks error 1");
 					e.printStackTrace();
 				} catch (final SecurityException e) {
-					log.error("manual checks error 2");
+					LOG.error("manual checks error 2");
 					e.printStackTrace();
 				} catch (final Exception e) {
-					log.error("manual checks error 3");
+					LOG.error("manual checks error 3");
 					e.printStackTrace();
 				}
 				
@@ -93,8 +93,8 @@ public class GfileReader {
 					}
 				}
 			} else {
-				log.error("fileRead=" + fileRead + " fileExists=" + fileExists + " fileIs=" + fileIs);
-				log.error("fileName=" + fileName + " listenerId=" + listenerId);
+				LOG.error("fileRead=" + fileRead + " fileExists=" + fileExists + " fileIs=" + fileIs);
+				LOG.error("fileName=" + fileName + " listenerId=" + listenerId);
 			}
 		}
 		

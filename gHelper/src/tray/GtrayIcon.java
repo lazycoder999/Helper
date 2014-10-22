@@ -22,23 +22,23 @@ public class GtrayIcon {
 //		gtray.createTry("1.jpg");
 //	}
 	
-	Gh							gh	= new Gh();
+	private final Gh			gh	= new Gh();
 	
-	private static final Logger	log	= Logger.getLogger(GtrayIcon.class.getName());
+	private static final Logger	LOG	= Logger.getLogger(GtrayIcon.class.getName());
 	
 	public URL getImageUrl(final String trayIconName) {
 		return getClass().getResource("resources/" + trayIconName);
 	}
 	
 	public void createTry(final String trayIconName) {
-		log.info("filename=" + gh.getRunningFileName());
+		LOG.info("filename=" + gh.getRunningFileName());
 		TrayIcon trayIcon = null;
 		if (SystemTray.isSupported()) {
 			final SystemTray tray = SystemTray.getSystemTray();
 			
 			Image image = null;
 			
-			log.info("getClass().getResource=" + getClass().getResource("resources/" + trayIconName));
+			LOG.info("getClass().getResource=" + getClass().getResource("resources/" + trayIconName));
 			image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("resources/" + trayIconName));
 			
 			final PopupMenu popMenu = new PopupMenu();
@@ -63,7 +63,7 @@ public class GtrayIcon {
 			}
 			
 		} else {
-			log.info("tray icon not supoorted");
+			LOG.info("tray icon not supoorted");
 		}
 	}
 	

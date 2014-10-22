@@ -33,6 +33,7 @@ public class Serverg3 implements Runnable {
 	private final Gh				gh						= new Gh();
 	public byte						srvId					= 0;
 	private ServerListener			srvListener;
+	public boolean					isConnected				= false;
 	
 	private static final Logger		log						= Logger.getLogger(Serverg3.class.getName());
 	
@@ -165,6 +166,7 @@ public class Serverg3 implements Runnable {
 		final Thread serverReconnecterThr = new Thread(new Runnable() {
 			@Override
 			public void run() {
+				isConnected = false;
 				log.info("Serverg3:" + srvPort + " reconnecter called callerId=" + calletId);
 				closeAll();
 				
@@ -216,6 +218,7 @@ public class Serverg3 implements Runnable {
 			//log.info(serverName + " serverListener received inputLine=" + receivedText);
 			if (receivedText != null) {
 				if ("PONG".equals(receivedText)) {
+					isConnected = true;
 					float latency = (System.nanoTime() - lastPingSentTns);
 					latency = latency / 1000000;
 					if (latency > 1) {
@@ -225,19 +228,19 @@ public class Serverg3 implements Runnable {
 				} else {
 					if (srvListener != null) {
 						if (srvId == 1) {
-							srvListener.incomingMessage1(receivedText);
+							srvListener.onSocketMsg1(receivedText);
 						} else if (srvId == 2) {
-							srvListener.incomingMessage2(receivedText);
+							srvListener.onSocketMsg2(receivedText);
 						} else if (srvId == 3) {
-							srvListener.incomingMessage3(receivedText);
+							srvListener.onSocketMsg3(receivedText);
 						} else if (srvId == 4) {
-							srvListener.incomingMessage4(receivedText);
+							srvListener.onSocketMsg4(receivedText);
 						} else if (srvId == 5) {
-							srvListener.incomingMessage5(receivedText);
+							srvListener.onSocketMsg5(receivedText);
 						} else if (srvId == 6) {
-							srvListener.incomingMessage6(receivedText);
+							srvListener.onSocketMsg6(receivedText);
 						} else if (srvId == 7) {
-							srvListener.incomingMessage7(receivedText);
+							srvListener.onSocketMsg7(receivedText);
 						} else if (srvId == 8) {
 							srvListener.incomingMessage8(receivedText);
 						} else if (srvId == 9) {

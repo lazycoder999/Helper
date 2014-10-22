@@ -12,7 +12,6 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.security.CodeSource;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,9 +23,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 public class Gh {
 	
-	public DecimalFormat		df2				= new DecimalFormat("#.##");
-	public boolean				shuttingDown	= false;
-	private static final Logger	log				= Logger.getLogger(Gh.class.getName());
+	private static final Logger	LOG	= Logger.getLogger(Gh.class.getName());
 	
 	public String gTime(final String dateTimeFormat, final LocalDateTime localDateTime) {
 		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateTimeFormat);
@@ -49,7 +46,7 @@ public class Gh {
 			jarDir = jarDir.replace("\\", "/");
 			return jarDir;
 		} else {
-			log.info("getJarFolder = null");
+			LOG.info("getJarFolder = null");
 			return null;
 		}
 	}
@@ -60,7 +57,7 @@ public class Gh {
 		try {
 			tokens = text.split(";");
 		} catch (final Exception e) {
-			log.error("gDecoder, error, text=" + text + ", e=" + e.getMessage());
+			LOG.error("gDecoder, error, text=" + text + ", e=" + e.getMessage());
 		}
 		
 		if (tokens != null) {
@@ -73,7 +70,7 @@ public class Gh {
 	
 	public String fileDateModified(final String fullFileName) {
 		final File file = new File(fullFileName);
-		log.info("fileDateModified: fullFileName=" + fullFileName);
+		LOG.info("fileDateModified: fullFileName=" + fullFileName);
 		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return sdf.format(file.lastModified());
 	}
@@ -93,13 +90,13 @@ public class Gh {
 		if (decodedPath != null) {
 			f = new File(decodedPath);
 		} else {
-			log.error("getRunningFileName decodedPath = null");
+			LOG.error("getRunningFileName decodedPath = null");
 		}
 		
 		if (f != null) {
 			return f.getName();
 		} else {
-			log.info("getRunningFileName file = null");
+			LOG.info("getRunningFileName file = null");
 			return null;
 		}
 	}
@@ -151,7 +148,7 @@ public class Gh {
 		try {
 			booleanValue = Boolean.valueOf((String) object);
 		} catch (final Exception e) {
-			log.error("LoadSett2: getBoolean, problem setting: " + key.toString() + "=" + object.toString() + e.getMessage());
+			LOG.error("LoadSett2: getBoolean, problem setting: " + key.toString() + "=" + object.toString() + e.getMessage());
 		}
 		
 		return booleanValue;
@@ -164,7 +161,7 @@ public class Gh {
 		try {
 			string = String.valueOf(object);
 		} catch (final Exception e) {
-			log.error("LoadSett2: getString, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
+			LOG.error("LoadSett2: getString, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
 		}
 		
 		return string;
@@ -177,7 +174,7 @@ public class Gh {
 		try {
 			intNumber = Integer.valueOf((String) object);
 		} catch (final Exception e) {
-			log.error("LoadSett2: getInteger, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
+			LOG.error("LoadSett2: getInteger, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
 		}
 		
 		return intNumber;
@@ -191,7 +188,7 @@ public class Gh {
 			floatNumber = Float.valueOf((String) object);
 			
 		} catch (final Exception e) {
-			log.error("LoadSett2: getFloat, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
+			LOG.error("LoadSett2: getFloat, problem setting: " + key.toString() + "=" + object.toString() + " e=" + e.getMessage());
 		}
 		
 		return floatNumber;
@@ -269,18 +266,18 @@ public class Gh {
 	}
 	
 	public Thread getThreadByName(final String threadName) {
-		Thread __tmp = null;
+		Thread tmpThread = null;
 		
 		final Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
 		final Thread[] threadArray = threadSet.toArray(new Thread[threadSet.size()]);
 		
 		for (int i = 0; i < threadArray.length; i++) {
 			if (threadArray[i].getName().equals(threadName)) {
-				__tmp = threadArray[i];
+				tmpThread = threadArray[i];
 			}
 		}
 		
-		return __tmp;
+		return tmpThread;
 	}
 	
 	private static final int	POW10[]	= { 1, 10, 100, 1000, 10000, 100000, 1000000 };
@@ -324,7 +321,7 @@ public class Gh {
 			//log.info("decodeFast. return=" + res3);
 			return res3;
 		} else {
-			log.error("index1=" + index1 + ", fieldName=" + fieldName + " not found in text=" + text);
+			LOG.error("index1=" + index1 + ", fieldName=" + fieldName + " not found in text=" + text);
 			return "[error]";
 		}
 		
