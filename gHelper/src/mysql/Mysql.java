@@ -119,10 +119,11 @@ public class Mysql {
 					final int result = st.executeUpdate(statement);
 					if (result == 0) {
 						LOG.info(result + " " + statement);
+					} else {
+						LOG.info("result=" + result);
 					}
 				} catch (final SQLException e) {
-					LOG.error("updateTradeField");
-					e.printStackTrace();
+					LOG.error("updateTradeField", e);
 				}
 				
 			}
@@ -142,8 +143,7 @@ public class Mysql {
 				LOG.info(result + " " + statement);
 			}
 		} catch (final SQLException e) {
-			LOG.error("insertNewTrade");
-			e.printStackTrace();
+			LOG.error("insertNewTrade", e);
 		}
 		
 	}
