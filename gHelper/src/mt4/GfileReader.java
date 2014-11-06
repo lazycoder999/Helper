@@ -5,7 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class GfileReader {
 	
@@ -19,7 +20,7 @@ public class GfileReader {
 //	}
 	
 	private ReaderListener		readerListener;
-	private static final Logger	LOG	= Logger.getLogger(GfileReader.class.getName());
+	private static final Logger	LOG	= LogManager.getLogger(GfileReader.class.getName());
 	
 	public void setReadrListener(final ReaderListener readerListener) {
 		this.readerListener = readerListener;

@@ -5,13 +5,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Mysql {
 	
 	private Connection			conn	= null;
 	private Statement			st		= null;
-	private static final Logger	LOG		= Logger.getLogger(Mysql.class.getName());
+	private static final Logger	LOG		= LogManager.getLogger(Mysql.class.getName());
 	
 	//private ResultSet	resultSet	= null;
 	
@@ -23,23 +24,20 @@ public class Mysql {
 					try {
 						Thread.sleep(1000);
 					} catch (final InterruptedException e) {
-						e.printStackTrace();
+						LOG.error(e);
 					}
 					
 					if (conn != null) {
-//						try {
-//							log.info("1 conn.isClosed()=" + conn.isClosed());
-//						} catch (SQLException e) {
-//							e.printStackTrace();
-//						}
 						try {
 							if (conn.isClosed()) {
 								LOG.info("conn.isClosed() == true");
 								conn.close();
 								((Mysql) conn).connectDb();
+							} else {
+								//LOG.info("conn.isClosed() = false");
 							}
 						} catch (final SQLException e) {
-							e.printStackTrace();
+							LOG.error(e);
 						}
 					} else {
 						LOG.error("conn == null");
@@ -49,7 +47,23 @@ public class Mysql {
 			}
 		});
 		connectionChecker.setPriority(Thread.MIN_PRIORITY);
+		connectionChecker.setName("connectionChecker-" + System.nanoTime());
 		connectionChecker.start();
+	}
+	
+	private void closeAll() {
+		
+		if (conn != null) {
+			try {
+				conn.close();
+			} catch (final SQLException e) {
+				LOG.error(e);
+			}
+		}
+		
+		if (conn != null) {
+			conn = null;
+		}
 	}
 	
 	private void connectDb() {
@@ -60,29 +74,34 @@ public class Mysql {
 		final String userName = "gunars1";
 		final String password = "tests1";
 		//mysql-connector-java-5.1.31-bin.jar
+		
 		try {
 			Class.forName(driver).newInstance();
 		} catch (final InstantiationException e) {
-			e.printStackTrace();
+			LOG.error(e);
+			//e.printStackTrace();
 		} catch (final IllegalAccessException e) {
-			e.printStackTrace();
+			LOG.error(e);
 		} catch (final ClassNotFoundException e) {
-			e.printStackTrace();
+			LOG.error(e);
 		}
 		
 		try {
 			conn = DriverManager.getConnection(url + dbName, userName, password);
 		} catch (final SQLException e) {
-			e.printStackTrace();
+			LOG.error(e);
 		}
 		
-		LOG.info(conn.toString());
-		
-		try {
-			st = conn.createStatement();
-		} catch (final SQLException e) {
-			LOG.error("connectDb");
-			e.printStackTrace();
+		if (conn != null) {
+			LOG.info(conn.toString());
+			
+			try {
+				st = conn.createStatement();
+			} catch (final SQLException e) {
+				LOG.error("connectDb", e);
+			}
+		} else {
+			LOG.error("conn=null");
 		}
 		LOG.info("End connectDb");
 	}
@@ -109,7 +128,7 @@ public class Mysql {
 	}*/	
 	
 	public void updateTradeField(final long tradeId, final String fieldName, final String fieldValue) {
-		final Thread startInThread = new Thread(new Runnable() {
+		final Thread updateTradeFieldThr = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				
@@ -120,16 +139,18 @@ public class Mysql {
 					if (result == 0) {
 						LOG.info(result + " " + statement);
 					} else {
-						LOG.info("result=" + result);
+						//LOG.info("result=" + result);
 					}
 				} catch (final SQLException e) {
 					LOG.error("updateTradeField", e);
+					closeAll();
 				}
 				
 			}
 		});
-		startInThread.setPriority(Thread.MIN_PRIORITY);
-		startInThread.start();
+		updateTradeFieldThr.setPriority(Thread.MIN_PRIORITY);
+		updateTradeFieldThr.setName("updateTradeFieldThr-" + System.nanoTime());
+		updateTradeFieldThr.start();
 	}
 	
 	public void insertNewTrade(final long tradeId) {
@@ -144,6 +165,7 @@ public class Mysql {
 			}
 		} catch (final SQLException e) {
 			LOG.error("insertNewTrade", e);
+			closeAll();
 		}
 		
 	}
@@ -152,7 +174,7 @@ public class Mysql {
 		final Thread startInThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				/*try {
+				try {
 					//st.execute("INSERT INTO skudra.trades(tradeId, tradeSide, requestedPrice, filledPrice) VALUES (4, 'buy', 1.12345, 1.12344)");
 					final String statement = "INSERT INTO skudra.performance(lastTableUpdate, whoWasIt, miliseconds) VALUES (NOW(), '" + whoWasIt
 							+ "'," + miliseconds + ")";
@@ -165,17 +187,11 @@ public class Mysql {
 					} else {
 						LOG.error("st = null");
 					}
-
+					
 				} catch (final SQLException e) {
-					LOG.error("insertNewPerformance");
-					try {
-						LOG.info("close connection");
-						conn.close();
-					} catch (final SQLException e1) {
-						e1.printStackTrace();
-					}
-					e.printStackTrace();
-				}*/
+					LOG.error("insertNewPerformance", e);
+					closeAll();
+				}
 				
 			}
 		});

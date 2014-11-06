@@ -9,7 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Clientg3 implements Runnable {
 	
@@ -30,7 +31,7 @@ public class Clientg3 implements Runnable {
 	private boolean					reconnecterCalled		= false;
 	private String					name;
 	
-	private static final Logger		LOG						= Logger.getLogger(Clientg3.class.getName());
+	private static final Logger		LOG						= LogManager.getLogger(Clientg3.class.getName());
 	
 // common
 	@Override

@@ -11,7 +11,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Serverg3 implements Runnable {
 	
@@ -35,7 +36,7 @@ public class Serverg3 implements Runnable {
 	private ServerListener			srvListener;
 	public boolean					isConnected				= false;
 	
-	private static final Logger		log						= Logger.getLogger(Serverg3.class.getName());
+	private static final Logger		log						= LogManager.getLogger(Serverg3.class.getName());
 	
 // unique
 	

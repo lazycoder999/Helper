@@ -2,8 +2,6 @@ package helper;
 
 import java.awt.Window;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,15 +13,14 @@ import java.security.CodeSource;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Properties;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Gh {
 	
-	private static final Logger	LOG	= Logger.getLogger(Gh.class.getName());
+	private static final Logger	LOG	= LogManager.getLogger(Gh.class.getName());
 	
 	public String gTime(final String dateTimeFormat, final LocalDateTime localDateTime) {
 		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateTimeFormat);
@@ -340,7 +337,7 @@ public class Gh {
 		return Long.valueOf(((long) ((Math.random() * (900000 - 100000)) + 100000)) + System.currentTimeMillis());
 	}
 	
-	public void specifyLogFile(final Class className) {
+/*	public void specifyLogFile(final Class className) {
 		//Load the Existing Properties
 		final Properties log4jprops = new Properties();
 		final InputStream is = className.getClass().getResourceAsStream("/log4j.properties");
@@ -351,17 +348,21 @@ public class Gh {
 		}
 		final String path = "C:/log_skudra/";
 		final String fileName = className.getName() + ".log";
-		
-		log4jprops.setProperty("log4j.appender.CONSOLE.layout.ConversionPattern", "%-24d{yyyy-MM-dd HH:mm:ss.SSS} %m %n");
-		
+
+		log4jprops.setProperty("log4j.appender.CONSOLE.layout.ConversionPattern", "%-24d{yyyy-MM-dd HH:mm:ss.SSS}|%-5p| %-40t| %-20M| %-m %n");
+//		log4jprops
+//				.setProperty(
+//						"log4j.appender.CONSOLE.layout.ConversionPattern",
+//						"%-d{yyyy-MM-dd HH:mm:ss.SSS} method=[%-M] thr=[%t] category=[%c] qualified class=[%C] file name=[%F] caller=[%l] number=[%L] message=[%-m] priority=[%-p] milisec=[%-r] %n");
+
 		log4jprops.setProperty("log4j.appender.FILE.File", path + gTime("yyyy-MM-hh", LocalDateTime.now()) + fileName);
 		log4jprops.setProperty("log4j.appender.FILE2.File", path + gTime("yyyy-MM-hh", LocalDateTime.now()) + "full_" + fileName);
-		
+
 		log4jprops.setProperty("log4j.appender.FILE.layout.ConversionPattern", "%-24d{yyyy-MM-dd HH:mm:ss.SSS} %m %n");
 		log4jprops.setProperty("log4j.appender.FILE2.layout.ConversionPattern",
 				"%-24d{yyyy-MM-dd HH:mm:ss.SSS} milis=%-20r class=%-30C meth=%-20M thr=%-40t cat=%-20c file=%-20F caller=%-50l msg=%-m %-p %n");
-		
+
 		//Configure Log4j
 		PropertyConfigurator.configure(log4jprops);
-	}
+	}*/
 }

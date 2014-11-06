@@ -13,7 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class GtrayIcon {
 	
@@ -24,7 +25,7 @@ public class GtrayIcon {
 	
 	private final Gh			gh	= new Gh();
 	
-	private static final Logger	LOG	= Logger.getLogger(GtrayIcon.class.getName());
+	private static final Logger	LOG	= LogManager.getLogger(GtrayIcon.class.getName());
 	
 	public URL getImageUrl(final String trayIconName) {
 		return getClass().getResource("resources/" + trayIconName);
